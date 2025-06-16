@@ -39,7 +39,7 @@ export default function Hero() {
                 </Button>
               </Link>
               <Link href="/categories">
-                <Button size="lg" variant="outline" className="border-white text-black hover:text-black hover:text-slate-900 px-8">
+                <Button size="lg" variant="outline" className="border-white text-black hover:text-white hover:text-slate-900 px-8">
                   Browse Categories
                 </Button>
               </Link>
