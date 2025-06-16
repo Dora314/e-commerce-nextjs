@@ -18,8 +18,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { 
   Package, 
   AlertTriangle, 
@@ -31,48 +36,20 @@ import {
   Edit,
   BarChart3,
   Truck,
-  CheckCircle
+  CheckCircle,
+  MoreHorizontal,
+  Eye
 } from 'lucide-react';
-import { products } from '@/lib/data';
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  sku: string;
-  category: string;
-  currentStock: number;
-  minStock: number;
-  maxStock: number;
-  reorderPoint: number;
-  unitCost: number;
-  totalValue: number;
-  supplier: string;
-  lastRestocked: string;
-  status: 'in-stock' | 'low-stock' | 'out-of-stock' | 'overstocked';
-}
-
-const mockInventory: InventoryItem[] = products.map((product, index) => ({
-  id: product.id,
-  name: product.name,
-  sku: `SKU-${product.id}`,
-  category: product.category,
-  currentStock: product.stock,
-  minStock: 10,
-  maxStock: 100,
-  reorderPoint: 15,
-  unitCost: product.price * 0.6, // Assuming 40% markup
-  totalValue: product.stock * (product.price * 0.6),
-  supplier: `Supplier ${index + 1}`,
-  lastRestocked: '2024-01-15',
-  status: product.stock === 0 ? 'out-of-stock' : 
-           product.stock < 10 ? 'low-stock' : 
-           product.stock > 80 ? 'overstocked' : 'in-stock'
-}));
+import { mockInventory } from '@/lib/mockData';
+import { InventoryItem } from '@/types/product';
+import InventoryItemForm from '@/components/admin/InventoryItemForm';
 
 export default function AdminInventoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isRestockDialogOpen, setIsRestockDialogOpen] = useState(false);
+  const [isAddItemOpen, setIsAddItemOpen] = useState(false);
+  const [isEditItemOpen, setIsEditItemOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
   const filteredInventory = mockInventory.filter(item => {
@@ -108,6 +85,11 @@ export default function AdminInventoryPage() {
     setIsRestockDialogOpen(true);
   };
 
+  const handleEdit = (item: InventoryItem) => {
+    setSelectedItem(item);
+    setIsEditItemOpen(true);
+  };
+
   const processRestock = (quantity: number) => {
     if (selectedItem) {
       console.log(`Restocking ${selectedItem.name} with ${quantity} units`);
@@ -136,7 +118,7 @@ export default function AdminInventoryPage() {
             <Download className="h-4 w-4" />
             Export Report
           </Button>
-          <Button className="gap-2">
+          <Button onClick={() => setIsAddItemOpen(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             Add Item
           </Button>
@@ -286,20 +268,23 @@ export default function AdminInventoryPage() {
                   <TableCell>{getStatusBadge(item.status)}</TableCell>
                   <TableCell>{new Date(item.lastRestocked).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRestock(item)}
-                        className="gap-1"
-                      >
-                        <Truck className="h-3 w-3" />
-                        Restock
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEdit(item)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Item
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleRestock(item)}>
+                          <Truck className="h-4 w-4 mr-2" />
+                          Restock
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
@@ -314,6 +299,34 @@ export default function AdminInventoryPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Item Dialog */}
+      <Dialog open={isAddItemOpen} onOpenChange={setIsAddItemOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Inventory Item</DialogTitle>
+          </DialogHeader>
+          <InventoryItemForm onClose={() => setIsAddItemOpen(false)} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Item Dialog */}
+      <Dialog open={isEditItemOpen} onOpenChange={setIsEditItemOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Inventory Item</DialogTitle>
+          </DialogHeader>
+          {selectedItem && (
+            <InventoryItemForm 
+              item={selectedItem}
+              onClose={() => {
+                setIsEditItemOpen(false);
+                setSelectedItem(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Restock Dialog */}
       <Dialog open={isRestockDialogOpen} onOpenChange={setIsRestockDialogOpen}>

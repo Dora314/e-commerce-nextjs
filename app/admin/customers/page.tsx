@@ -38,96 +38,20 @@ import {
   Phone,
   MapPin,
   Calendar,
-  ShoppingBag
+  ShoppingBag,
+  Edit
 } from 'lucide-react';
-
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  joinDate: string;
-  totalOrders: number;
-  totalSpent: number;
-  lastOrder: string;
-  status: 'active' | 'inactive' | 'vip' | 'new';
-  avatar: string;
-}
-
-const mockCustomers: Customer[] = [
-  {
-    id: 'CUST-001',
-    name: 'John Doe',
-    email: 'john@example.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Main St, City, State 12345',
-    joinDate: '2023-06-15',
-    totalOrders: 12,
-    totalSpent: 2499.99,
-    lastOrder: '2024-01-20',
-    status: 'vip',
-    avatar: 'https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=100'
-  },
-  {
-    id: 'CUST-002',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    phone: '+1 (555) 234-5678',
-    address: '456 Oak Ave, City, State 67890',
-    joinDate: '2023-08-22',
-    totalOrders: 8,
-    totalSpent: 1299.99,
-    lastOrder: '2024-01-18',
-    status: 'active',
-    avatar: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=100'
-  },
-  {
-    id: 'CUST-003',
-    name: 'Bob Johnson',
-    email: 'bob@example.com',
-    phone: '+1 (555) 345-6789',
-    address: '789 Pine St, City, State 54321',
-    joinDate: '2024-01-10',
-    totalOrders: 2,
-    totalSpent: 599.99,
-    lastOrder: '2024-01-15',
-    status: 'new',
-    avatar: 'https://images.pexels.com/photos/3777943/pexels-photo-3777943.jpeg?auto=compress&cs=tinysrgb&w=100'
-  },
-  {
-    id: 'CUST-004',
-    name: 'Alice Brown',
-    email: 'alice@example.com',
-    phone: '+1 (555) 456-7890',
-    address: '321 Elm St, City, State 98765',
-    joinDate: '2023-03-12',
-    totalOrders: 5,
-    totalSpent: 899.99,
-    lastOrder: '2023-12-20',
-    status: 'inactive',
-    avatar: 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=100'
-  },
-  {
-    id: 'CUST-005',
-    name: 'Charlie Wilson',
-    email: 'charlie@example.com',
-    phone: '+1 (555) 567-8901',
-    address: '654 Maple Ave, City, State 13579',
-    joinDate: '2023-11-05',
-    totalOrders: 15,
-    totalSpent: 3299.99,
-    lastOrder: '2024-01-22',
-    status: 'vip',
-    avatar: 'https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=100'
-  }
-];
+import { mockCustomers } from '@/lib/mockData';
+import { Customer } from '@/types/product';
+import CustomerForm from '@/components/admin/CustomerForm';
 
 export default function AdminCustomersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isCustomerDetailOpen, setIsCustomerDetailOpen] = useState(false);
+  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+  const [isEditCustomerOpen, setIsEditCustomerOpen] = useState(false);
 
   const filteredCustomers = mockCustomers.filter(customer => {
     const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -163,6 +87,11 @@ export default function AdminCustomersPage() {
     setIsCustomerDetailOpen(true);
   };
 
+  const editCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsEditCustomerOpen(true);
+  };
+
   const contactCustomer = (customer: Customer, method: 'email' | 'phone') => {
     if (method === 'email') {
       window.open(`mailto:${customer.email}`);
@@ -185,7 +114,7 @@ export default function AdminCustomersPage() {
             <Download className="h-4 w-4" />
             Export Customers
           </Button>
-          <Button className="gap-2">
+          <Button onClick={() => setIsAddCustomerOpen(true)} className="gap-2">
             <UserPlus className="h-4 w-4" />
             Add Customer
           </Button>
@@ -337,6 +266,10 @@ export default function AdminCustomersPage() {
                           <Eye className="h-4 w-4 mr-2" />
                           View Details
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => editCustomer(customer)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Customer
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => contactCustomer(customer, 'email')}>
                           <Mail className="h-4 w-4 mr-2" />
                           Send Email
@@ -361,6 +294,34 @@ export default function AdminCustomersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Customer Dialog */}
+      <Dialog open={isAddCustomerOpen} onOpenChange={setIsAddCustomerOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Customer</DialogTitle>
+          </DialogHeader>
+          <CustomerForm onClose={() => setIsAddCustomerOpen(false)} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Customer Dialog */}
+      <Dialog open={isEditCustomerOpen} onOpenChange={setIsEditCustomerOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Customer</DialogTitle>
+          </DialogHeader>
+          {selectedCustomer && (
+            <CustomerForm 
+              customer={selectedCustomer}
+              onClose={() => {
+                setIsEditCustomerOpen(false);
+                setSelectedCustomer(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Customer Details Dialog */}
       <Dialog open={isCustomerDetailOpen} onOpenChange={setIsCustomerDetailOpen}>
