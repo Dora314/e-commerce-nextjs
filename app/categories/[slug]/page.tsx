@@ -17,12 +17,6 @@ interface CategoryPageProps {
   };
 }
 
-export async function generateStaticParams() {
-  return categories.map((category) => ({
-    slug: category.slug,
-  }));
-}
-
 export default function CategoryPage({ params }: CategoryPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
