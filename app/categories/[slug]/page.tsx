@@ -17,17 +17,34 @@ interface CategoryPageProps {
   };
 }
 
+// Static params generation function - must be exported and placed at the top level
+export async function generateStaticParams() {
+  try {
+    // Return array of objects with slug property for each category
+    return categories.map((category) => ({
+      slug: category.slug,
+    }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    // Return empty array as fallback to prevent build failures
+    return [];
+  }
+}
+
 export default function CategoryPage({ params }: CategoryPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [priceRange, setPriceRange] = useState('all');
 
+  // Find the category based on the slug parameter
   const category = categories.find(c => c.slug === params.slug);
   
+  // Return 404 if category not found
   if (!category) {
     notFound();
   }
 
+  // Filter products by category
   let categoryProducts = products.filter(product => 
     product.category.toLowerCase() === category.name.toLowerCase()
   );
@@ -36,7 +53,8 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   if (searchTerm) {
     categoryProducts = categoryProducts.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase())
+      product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }
 
@@ -63,6 +81,8 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         return b.rating - a.rating;
       case 'popular':
         return b.reviews - a.reviews;
+      case 'name':
+        return a.name.localeCompare(b.name);
       default:
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
@@ -121,7 +141,8 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Prices</SelectItem>
-              <SelectItem value="0-100">$0 - $100</SelectItem>
+              <SelectItem value="0-50">$0 - $50</SelectItem>
+              <SelectItem value="50-100">$50 - $100</SelectItem>
               <SelectItem value="100-300">$100 - $300</SelectItem>
               <SelectItem value="300-500">$300 - $500</SelectItem>
               <SelectItem value="500">$500+</SelectItem>
@@ -135,6 +156,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="name">Name A-Z</SelectItem>
               <SelectItem value="price-low">Price: Low to High</SelectItem>
               <SelectItem value="price-high">Price: High to Low</SelectItem>
               <SelectItem value="rating">Highest Rated</SelectItem>
@@ -151,6 +173,25 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               <List className="h-4 w-4" />
             </Button>
           </div>
+        </div>
+
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+          <Badge variant="outline">
+            {categoryProducts.length} products found
+          </Badge>
+          {(searchTerm || priceRange !== 'all') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchTerm('');
+                setPriceRange('all');
+              }}
+              className="text-slate-600 hover:text-slate-900"
+            >
+              Clear Filters
+            </Button>
+          )}
         </div>
       </div>
 
@@ -174,6 +215,15 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             setSortBy('newest');
           }}>
             Clear Filters
+          </Button>
+        </div>
+      )}
+
+      {/* Load More */}
+      {categoryProducts.length > 0 && categoryProducts.length >= 12 && (
+        <div className="text-center mt-12">
+          <Button size="lg" variant="outline" className="px-8">
+            Load More Products
           </Button>
         </div>
       )}
