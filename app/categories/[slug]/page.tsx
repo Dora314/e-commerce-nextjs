@@ -8,7 +8,9 @@ interface CategoryPageProps {
   };
 }
 
+// Ensure this function is properly exported and async
 export async function generateStaticParams() {
+  // Make sure categories is available at build time
   return categories.map((category) => ({
     slug: category.slug,
   }));
