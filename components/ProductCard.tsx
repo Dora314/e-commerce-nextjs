@@ -7,17 +7,30 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Product } from '@/types/product';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { dispatch } = useCart();
+  const { dispatch: cartDispatch } = useCart();
+  const { state: wishlistState, dispatch: wishlistDispatch } = useWishlist();
+
+  const isInWishlist = wishlistState.items.some(item => item.id === product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    dispatch({ type: 'ADD_ITEM', payload: product });
+    cartDispatch({ type: 'ADD_ITEM', payload: product });
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isInWishlist) {
+      wishlistDispatch({ type: 'REMOVE_ITEM', payload: product.id });
+    } else {
+      wishlistDispatch({ type: 'ADD_ITEM', payload: product });
+    }
   };
 
   const discountPercentage = product.originalPrice 
@@ -53,10 +66,14 @@ export default function ProductCard({ product }: ProductCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-3 right-3 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            onClick={(e) => e.preventDefault()}
+            className={`absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 ${
+              isInWishlist 
+                ? 'bg-red-50 text-red-600 opacity-100' 
+                : 'bg-white/80 hover:bg-white'
+            }`}
+            onClick={handleWishlistToggle}
           >
-            <Heart className="h-4 w-4" />
+            <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-current' : ''}`} />
           </Button>
 
           {/* Quick Add to Cart */}
@@ -65,9 +82,10 @@ export default function ProductCard({ product }: ProductCardProps) {
               onClick={handleAddToCart}
               className="w-full bg-slate-900 hover:bg-slate-800 text-white"
               size="sm"
+              disabled={product.stock === 0}
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Quick Add
+              {product.stock === 0 ? 'Out of Stock' : 'Quick Add'}
             </Button>
           </div>
         </div>
@@ -120,7 +138,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
             
             <div className="text-right">
-              <p className="text-xs text-slate-500">
+              <p className={`text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
               </p>
             </div>

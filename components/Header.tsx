@@ -2,15 +2,17 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, ShoppingCart, Menu, User, Heart } from 'lucide-react';
+import { ShoppingCart, Menu, User, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
+import SearchBar from '@/components/SearchBar';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { state } = useCart();
+  const { state: cartState } = useCart();
+  const { state: wishlistState } = useWishlist();
 
   return (
     <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-50">
@@ -23,13 +25,7 @@ export default function Header() {
 
           {/* Search Bar - Desktop */}
           <div className="hidden md:flex flex-1 max-w-lg mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search products..."
-                className="pl-10 w-full bg-gray-50 border-gray-200 focus:bg-white"
-              />
-            </div>
+            <SearchBar className="w-full" />
           </div>
 
           {/* Navigation - Desktop */}
@@ -48,9 +44,19 @@ export default function Header() {
           {/* Actions */}
           <div className="flex items-center space-x-2">
             {/* Wishlist */}
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-              <Heart className="h-5 w-5" />
-            </Button>
+            <Link href="/wishlist">
+              <Button variant="ghost" size="icon" className="hidden sm:flex relative">
+                <Heart className="h-5 w-5" />
+                {wishlistState.itemCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                  >
+                    {wishlistState.itemCount}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
 
             {/* User Account */}
             <Button variant="ghost" size="icon" className="hidden sm:flex">
@@ -61,12 +67,12 @@ export default function Header() {
             <Link href="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
-                {state.itemCount > 0 && (
+                {cartState.itemCount > 0 && (
                   <Badge 
                     variant="destructive" 
                     className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
                   >
-                    {state.itemCount}
+                    {cartState.itemCount}
                   </Badge>
                 )}
               </Button>
@@ -89,13 +95,7 @@ export default function Header() {
           <div className="md:hidden border-t bg-white py-4">
             <div className="flex flex-col space-y-4">
               {/* Mobile Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search products..."
-                  className="pl-10 w-full bg-gray-50 border-gray-200"
-                />
-              </div>
+              <SearchBar placeholder="Search products..." />
               
               {/* Mobile Navigation */}
               <div className="flex flex-col space-y-2">
@@ -119,6 +119,14 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Deals
+                </Link>
+                <Link 
+                  href="/wishlist" 
+                  className="text-slate-600 hover:text-slate-900 font-medium py-2 transition-colors flex items-center gap-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Heart className="h-4 w-4" />
+                  Wishlist {wishlistState.itemCount > 0 && `(${wishlistState.itemCount})`}
                 </Link>
               </div>
             </div>
