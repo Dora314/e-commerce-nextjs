@@ -17,20 +17,6 @@ interface CategoryPageProps {
   };
 }
 
-// Static params generation function - must be exported and placed at the top level
-export async function generateStaticParams() {
-  try {
-    // Return array of objects with slug property for each category
-    return categories.map((category) => ({
-      slug: category.slug,
-    }));
-  } catch (error) {
-    console.error('Error generating static params:', error);
-    // Return empty array as fallback to prevent build failures
-    return [];
-  }
-}
-
 export default function CategoryPage({ params }: CategoryPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
