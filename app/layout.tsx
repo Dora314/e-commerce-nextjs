@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { WishlistProvider } from '@/contexts/WishlistContext';
 import { SearchProvider } from '@/contexts/SearchContext';
@@ -22,19 +23,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <SearchProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <div className="min-h-screen flex flex-col">
-                <Header />
-                <main className="flex-1">
-                  {children}
-                </main>
-                <Footer />
-              </div>
-            </CartProvider>
-          </WishlistProvider>
-        </SearchProvider>
+        <AuthProvider>
+          <SearchProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-1">
+                    {children}
+                  </main>
+                  <Footer />
+                </div>
+              </CartProvider>
+            </WishlistProvider>
+          </SearchProvider>
+        </AuthProvider>
       </body>
     </html>
   );
