@@ -19,8 +19,8 @@ export default function CartPage() {
   const updateQuantity = (id: string, newQuantity: number) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity: newQuantity } });
     toast({
-      title: "Đã cập nhật số lượng",
-      description: "Số lượng sản phẩm đã được cập nhật",
+      title: "Quantity updated",
+      description: "Product quantity has been updated",
       variant: "default",
     });
   };
@@ -28,8 +28,8 @@ export default function CartPage() {
   const removeItem = (id: string) => {
     dispatch({ type: 'REMOVE_ITEM', payload: id });
     toast({
-      title: "Đã xóa sản phẩm",
-      description: "Sản phẩm đã được xóa khỏi giỏ hàng",
+      title: "Product removed",
+      description: "Product has been removed from cart",
       variant: "default",
     });
   };
@@ -37,8 +37,8 @@ export default function CartPage() {
   const handleCheckout = () => {
     if (!authState.isAuthenticated) {
       toast({
-        title: "Yêu cầu đăng nhập",
-        description: "Vui lòng đăng nhập để tiến hành thanh toán",
+        title: "Login required",
+        description: "Please login to proceed to checkout",
         variant: "destructive",
       });
       router.push('/login');
@@ -46,8 +46,8 @@ export default function CartPage() {
     }
 
     toast({
-      title: "Chuyển đến thanh toán",
-      description: "Đang chuyển hướng đến trang thanh toán...",
+      title: "Proceeding to checkout",
+      description: "Redirecting to checkout page...",
       variant: "default",
     });
     // Here you would redirect to checkout page
@@ -58,14 +58,14 @@ export default function CartPage() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center max-w-md mx-auto">
           <ShoppingBag className="h-24 w-24 text-slate-300 mx-auto mb-8" />
-          <h1 className="text-3xl font-bold text-slate-900 mb-4">Giỏ hàng trống</h1>
+          <h1 className="text-3xl font-bold text-slate-900 mb-4">Your cart is empty</h1>
           <p className="text-slate-600 mb-8">
-            Có vẻ như bạn chưa thêm sản phẩm nào vào giỏ hàng.
+            Looks like you haven't added any items to your cart yet.
           </p>
           <Link href="/products">
             <Button size="lg" className="bg-slate-900 hover:bg-slate-800">
               <ArrowLeft className="mr-2 h-5 w-5" />
-              Tiếp tục mua sắm
+              Continue Shopping
             </Button>
           </Link>
         </div>
@@ -78,10 +78,10 @@ export default function CartPage() {
       <div className="mb-8">
         <Link href="/products" className="inline-flex items-center text-slate-600 hover:text-slate-900 mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Tiếp tục mua sắm
+          Continue Shopping
         </Link>
-        <h1 className="text-3xl font-bold text-slate-900">Giỏ hàng</h1>
-        <p className="text-slate-600 mt-2">{state.itemCount} {state.itemCount === 1 ? 'sản phẩm' : 'sản phẩm'} trong giỏ hàng</p>
+        <h1 className="text-3xl font-bold text-slate-900">Shopping Cart</h1>
+        <p className="text-slate-600 mt-2">{state.itemCount} {state.itemCount === 1 ? 'item' : 'items'} in your cart</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-12">
@@ -146,7 +146,7 @@ export default function CartPage() {
                         ${(item.product.price * item.quantity).toFixed(2)}
                       </div>
                       <div className="text-sm text-slate-600">
-                        ${item.product.price.toFixed(2)} mỗi cái
+                        ${item.product.price.toFixed(2)} each
                       </div>
                     </div>
                   </div>
@@ -159,28 +159,28 @@ export default function CartPage() {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-slate-50 rounded-lg p-6 sticky top-8">
-            <h2 className="text-xl font-bold text-slate-900 mb-6">Tóm tắt đơn hàng</h2>
+            <h2 className="text-xl font-bold text-slate-900 mb-6">Order Summary</h2>
             
             <div className="space-y-4 mb-6">
               <div className="flex justify-between">
-                <span className="text-slate-600">Tạm tính</span>
+                <span className="text-slate-600">Subtotal</span>
                 <span className="font-medium">${state.total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Phí vận chuyển</span>
+                <span className="text-slate-600">Shipping</span>
                 <span className="font-medium text-emerald-600">
-                  {state.total >= 100 ? 'MIỄN PHÍ' : '$9.99'}
+                  {state.total >= 100 ? 'FREE' : '$9.99'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Thuế</span>
+                <span className="text-slate-600">Tax</span>
                 <span className="font-medium">${(state.total * 0.08).toFixed(2)}</span>
               </div>
               
               <Separator />
               
               <div className="flex justify-between text-lg font-bold">
-                <span>Tổng cộng</span>
+                <span>Total</span>
                 <span>${(state.total + (state.total >= 100 ? 0 : 9.99) + (state.total * 0.08)).toFixed(2)}</span>
               </div>
             </div>
@@ -188,7 +188,7 @@ export default function CartPage() {
             {state.total < 100 && (
               <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6">
                 <p className="text-sm text-emerald-800">
-                  Thêm ${(100 - state.total).toFixed(2)} để được <strong>MIỄN PHÍ vận chuyển!</strong>
+                  Add ${(100 - state.total).toFixed(2)} more to get <strong>FREE shipping!</strong>
                 </p>
               </div>
             )}
@@ -198,12 +198,12 @@ export default function CartPage() {
               size="lg"
               onClick={handleCheckout}
             >
-              Tiến hành thanh toán
+              Proceed to Checkout
             </Button>
             
             <Link href="/products">
               <Button variant="outline" className="w-full" size="lg">
-                Tiếp tục mua sắm
+                Continue Shopping
               </Button>
             </Link>
           </div>

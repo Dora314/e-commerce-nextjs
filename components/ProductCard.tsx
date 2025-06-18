@@ -31,8 +31,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     // Check if user is authenticated
     if (!authState.isAuthenticated) {
       toast({
-        title: "Yêu cầu đăng nhập",
-        description: "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng",
+        title: "Login required",
+        description: "Please login to add products to cart",
         variant: "destructive",
       });
       router.push('/login');
@@ -41,8 +41,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
     if (product.stock === 0) {
       toast({
-        title: "Hết hàng",
-        description: "Sản phẩm này hiện đã hết hàng",
+        title: "Out of stock",
+        description: "This product is currently out of stock",
         variant: "destructive",
       });
       return;
@@ -50,8 +50,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
     cartDispatch({ type: 'ADD_ITEM', payload: product });
     toast({
-      title: "Đã thêm vào giỏ hàng",
-      description: `${product.name} đã được thêm vào giỏ hàng`,
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart`,
       variant: "default",
     });
   };
@@ -62,8 +62,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     // Check if user is authenticated
     if (!authState.isAuthenticated) {
       toast({
-        title: "Yêu cầu đăng nhập",
-        description: "Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích",
+        title: "Login required",
+        description: "Please login to add products to wishlist",
         variant: "destructive",
       });
       router.push('/login');
@@ -73,15 +73,15 @@ export default function ProductCard({ product }: ProductCardProps) {
     if (isInWishlist) {
       wishlistDispatch({ type: 'REMOVE_ITEM', payload: product.id });
       toast({
-        title: "Đã xóa khỏi danh sách yêu thích",
-        description: `${product.name} đã được xóa khỏi danh sách yêu thích`,
+        title: "Removed from wishlist",
+        description: `${product.name} has been removed from your wishlist`,
         variant: "default",
       });
     } else {
       wishlistDispatch({ type: 'ADD_ITEM', payload: product });
       toast({
-        title: "Đã thêm vào danh sách yêu thích",
-        description: `${product.name} đã được thêm vào danh sách yêu thích`,
+        title: "Added to wishlist",
+        description: `${product.name} has been added to your wishlist`,
         variant: "default",
       });
     }
@@ -139,7 +139,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               disabled={product.stock === 0}
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
-              {product.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
+              {product.stock === 0 ? 'Out of Stock' : 'Quick Add'}
             </Button>
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             
             <div className="text-right">
               <p className={`text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {product.stock > 0 ? `${product.stock} còn lại` : 'Hết hàng'}
+                {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
               </p>
             </div>
           </div>

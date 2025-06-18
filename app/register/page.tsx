@@ -28,25 +28,25 @@ export default function RegisterPage() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Tên là bắt buộc';
+      newErrors.name = 'Name is required';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email là bắt buộc';
+      newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email không hợp lệ';
+      newErrors.email = 'Email is invalid';
     }
 
     if (!formData.password) {
-      newErrors.password = 'Mật khẩu là bắt buộc';
+      newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+      newErrors.password = 'Password must be at least 6 characters';
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu';
+      newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Mật khẩu không khớp';
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -63,16 +63,16 @@ export default function RegisterPage() {
     const success = await register(formData.name, formData.email, formData.password);
     if (success) {
       toast({
-        title: "Đăng ký thành công",
-        description: "Chào mừng bạn đến với EliteStore!",
+        title: "Registration successful",
+        description: "Welcome to EliteStore!",
         variant: "default",
       });
       router.push('/');
     } else {
-      setErrors({ email: 'Email đã tồn tại' });
+      setErrors({ email: 'Email already exists' });
       toast({
-        title: "Đăng ký thất bại",
-        description: "Email đã được sử dụng",
+        title: "Registration failed",
+        description: "Email is already in use",
         variant: "destructive",
       });
     }
@@ -93,7 +93,7 @@ export default function RegisterPage() {
         {/* Back to Home */}
         <Link href="/" className="inline-flex items-center text-white/80 hover:text-white mb-8 transition-colors">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Về trang chủ
+          Back to Home
         </Link>
 
         {/* Register Card */}
@@ -102,13 +102,13 @@ export default function RegisterPage() {
             <div className="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <UserPlus className="h-8 w-8 text-emerald-600" />
             </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Tạo tài khoản</h1>
-            <p className="text-slate-600">Tham gia EliteStore và bắt đầu mua sắm</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Create Account</h1>
+            <p className="text-slate-600">Join EliteStore and start shopping</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="name">Họ và tên</Label>
+              <Label htmlFor="name">Full Name</Label>
               <div className="relative mt-1">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -117,7 +117,7 @@ export default function RegisterPage() {
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   className={`pl-10 ${errors.name ? 'border-red-500' : ''}`}
-                  placeholder="Nhập họ và tên"
+                  placeholder="Enter your full name"
                   disabled={state.isLoading}
                 />
               </div>
@@ -125,7 +125,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <Label htmlFor="email">Địa chỉ Email</Label>
+              <Label htmlFor="email">Email Address</Label>
               <div className="relative mt-1">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -134,7 +134,7 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
-                  placeholder="Nhập email của bạn"
+                  placeholder="Enter your email"
                   disabled={state.isLoading}
                 />
               </div>
@@ -142,7 +142,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <Label htmlFor="password">Mật khẩu</Label>
+              <Label htmlFor="password">Password</Label>
               <div className="relative mt-1">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -151,7 +151,7 @@ export default function RegisterPage() {
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   className={`pl-10 pr-10 ${errors.password ? 'border-red-500' : ''}`}
-                  placeholder="Tạo mật khẩu"
+                  placeholder="Create a password"
                   disabled={state.isLoading}
                 />
                 <button
@@ -166,7 +166,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative mt-1">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -175,7 +175,7 @@ export default function RegisterPage() {
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   className={`pl-10 pr-10 ${errors.confirmPassword ? 'border-red-500' : ''}`}
-                  placeholder="Xác nhận mật khẩu"
+                  placeholder="Confirm your password"
                   disabled={state.isLoading}
                 />
                 <button
@@ -192,13 +192,13 @@ export default function RegisterPage() {
             <div className="flex items-center">
               <input type="checkbox" className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" required />
               <span className="ml-2 text-sm text-slate-600">
-                Tôi đồng ý với{' '}
+                I agree to the{' '}
                 <Link href="/terms" className="text-emerald-600 hover:text-emerald-700">
-                  Điều khoản dịch vụ
+                  Terms of Service
                 </Link>{' '}
-                và{' '}
+                and{' '}
                 <Link href="/privacy" className="text-emerald-600 hover:text-emerald-700">
-                  Chính sách bảo mật
+                  Privacy Policy
                 </Link>
               </span>
             </div>
@@ -209,15 +209,15 @@ export default function RegisterPage() {
               size="lg"
               disabled={state.isLoading}
             >
-              {state.isLoading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
+              {state.isLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-slate-600">
-              Đã có tài khoản?{' '}
+              Already have an account?{' '}
               <Link href="/login" className="text-emerald-600 hover:text-emerald-700 font-medium">
-                Đăng nhập
+                Sign in
               </Link>
             </p>
           </div>
