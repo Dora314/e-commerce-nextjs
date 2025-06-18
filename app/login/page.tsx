@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const { login, state } = useAuth();
+  const { toast } = useToast();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,15 +27,25 @@ export default function LoginPage() {
     setError('');
 
     if (!formData.email || !formData.password) {
-      setError('Please fill in all fields');
+      setError('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
     const success = await login(formData.email, formData.password);
     if (success) {
+      toast({
+        title: "Đăng nhập thành công",
+        description: "Chào mừng bạn quay trở lại!",
+        variant: "default",
+      });
       router.push('/');
     } else {
-      setError('Invalid email or password');
+      setError('Email hoặc mật khẩu không đúng');
+      toast({
+        title: "Đăng nhập thất bại",
+        description: "Email hoặc mật khẩu không đúng",
+        variant: "destructive",
+      });
     }
   };
 
@@ -50,7 +62,7 @@ export default function LoginPage() {
         {/* Back to Home */}
         <Link href="/" className="inline-flex items-center text-white/80 hover:text-white mb-8 transition-colors">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
+          Về trang chủ
         </Link>
 
         {/* Login Card */}
@@ -59,16 +71,16 @@ export default function LoginPage() {
             <div className="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <LogIn className="h-8 w-8 text-emerald-600" />
             </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome Back</h1>
-            <p className="text-slate-600">Sign in to your EliteStore account</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Chào mừng trở lại</h1>
+            <p className="text-slate-600">Đăng nhập vào tài khoản EliteStore của bạn</p>
           </div>
 
           {/* Demo Credentials */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-blue-900 mb-2">Demo Credentials:</h3>
+            <h3 className="font-semibold text-blue-900 mb-2">Tài khoản demo:</h3>
             <div className="space-y-2 text-sm">
               <div>
-                <Badge variant="outline" className="mr-2">User</Badge>
+                <Badge variant="outline" className="mr-2">Người dùng</Badge>
                 <span className="text-blue-800">john@example.com / password123</span>
               </div>
               <div>
@@ -86,7 +98,7 @@ export default function LoginPage() {
             )}
 
             <div>
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email">Địa chỉ Email</Label>
               <div className="relative mt-1">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -95,14 +107,14 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   className="pl-10"
-                  placeholder="Enter your email"
+                  placeholder="Nhập email của bạn"
                   disabled={state.isLoading}
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Mật khẩu</Label>
               <div className="relative mt-1">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -111,7 +123,7 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   className="pl-10 pr-10"
-                  placeholder="Enter your password"
+                  placeholder="Nhập mật khẩu"
                   disabled={state.isLoading}
                 />
                 <button
@@ -127,10 +139,10 @@ export default function LoginPage() {
             <div className="flex items-center justify-between">
               <label className="flex items-center">
                 <input type="checkbox" className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                <span className="ml-2 text-sm text-slate-600">Remember me</span>
+                <span className="ml-2 text-sm text-slate-600">Ghi nhớ đăng nhập</span>
               </label>
               <Link href="/forgot-password" className="text-sm text-emerald-600 hover:text-emerald-700">
-                Forgot password?
+                Quên mật khẩu?
               </Link>
             </div>
 
@@ -140,15 +152,15 @@ export default function LoginPage() {
               size="lg"
               disabled={state.isLoading}
             >
-              {state.isLoading ? 'Signing in...' : 'Sign In'}
+              {state.isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-slate-600">
-              Don't have an account?{' '}
+              Chưa có tài khoản?{' '}
               <Link href="/register" className="text-emerald-600 hover:text-emerald-700 font-medium">
-                Sign up
+                Đăng ký ngay
               </Link>
             </p>
           </div>

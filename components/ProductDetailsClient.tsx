@@ -3,12 +3,16 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Star, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types/product';
 
@@ -21,11 +25,72 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   
-  const { dispatch } = useCart();
+  const { dispatch: cartDispatch } = useCart();
+  const { state: wishlistState, dispatch: wishlistDispatch } = useWishlist();
+  const { state: authState } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const isInWishlist = wishlistState.items.some(item => item.id === product.id);
 
   const handleAddToCart = () => {
+    // Check if user is authenticated
+    if (!authState.isAuthenticated) {
+      toast({
+        title: "Yêu cầu đăng nhập",
+        description: "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng",
+        variant: "destructive",
+      });
+      router.push('/login');
+      return;
+    }
+
+    if (product.stock === 0) {
+      toast({
+        title: "Hết hàng",
+        description: "Sản phẩm này hiện đã hết hàng",
+        variant: "destructive",
+      });
+      return;
+    }
+
     for (let i = 0; i < quantity; i++) {
-      dispatch({ type: 'ADD_ITEM', payload: product });
+      cartDispatch({ type: 'ADD_ITEM', payload: product });
+    }
+
+    toast({
+      title: "Đã thêm vào giỏ hàng",
+      description: `${quantity} x ${product.name} đã được thêm vào giỏ hàng`,
+      variant: "default",
+    });
+  };
+
+  const handleWishlistToggle = () => {
+    // Check if user is authenticated
+    if (!authState.isAuthenticated) {
+      toast({
+        title: "Yêu cầu đăng nhập",
+        description: "Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích",
+        variant: "destructive",
+      });
+      router.push('/login');
+      return;
+    }
+
+    if (isInWishlist) {
+      wishlistDispatch({ type: 'REMOVE_ITEM', payload: product.id });
+      toast({
+        title: "Đã xóa khỏi danh sách yêu thích",
+        description: `${product.name} đã được xóa khỏi danh sách yêu thích`,
+        variant: "default",
+      });
+    } else {
+      wishlistDispatch({ type: 'ADD_ITEM', payload: product });
+      toast({
+        title: "Đã thêm vào danh sách yêu thích",
+        description: `${product.name} đã được thêm vào danh sách yêu thích`,
+        variant: "default",
+      });
     }
   };
 
@@ -93,7 +158,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
                   ))}
                 </div>
                 <span className="font-medium">{product.rating}</span>
-                <span className="text-slate-600">({product.reviews} reviews)</span>
+                <span className="text-slate-600">({product.reviews} đánh giá)</span>
               </div>
             </div>
 
@@ -103,7 +168,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
               {product.originalPrice && (
                 <>
                   <span className="text-2xl text-slate-500 line-through">${product.originalPrice}</span>
-                  <Badge variant="destructive">Save {discountPercentage}%</Badge>
+                  <Badge variant="destructive">Tiết kiệm {discountPercentage}%</Badge>
                 </>
               )}
             </div>
@@ -117,14 +182,14 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
           <div className="flex items-center gap-2 mb-6">
             <div className={`w-3 h-3 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
             <span className={product.stock > 0 ? 'text-green-700' : 'text-red-700'}>
-              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+              {product.stock > 0 ? `${product.stock} còn lại` : 'Hết hàng'}
             </span>
           </div>
 
           {/* Quantity and Add to Cart */}
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <label className="font-medium">Quantity:</label>
+              <label className="font-medium">Số lượng:</label>
               <div className="flex items-center border border-gray-300 rounded-lg">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -152,11 +217,16 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
                 size="lg"
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                Add to Cart
+                {product.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
               </Button>
               
-              <Button variant="outline" size="lg">
-                <Heart className="h-5 w-5" />
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={handleWishlistToggle}
+                className={isInWishlist ? 'bg-red-50 text-red-600 border-red-200' : ''}
+              >
+                <Heart className={`h-5 w-5 ${isInWishlist ? 'fill-current' : ''}`} />
               </Button>
               
               <Button variant="outline" size="lg">
@@ -169,18 +239,18 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
           <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-200">
             <div className="text-center">
               <Truck className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-              <p className="text-sm font-medium">Free Shipping</p>
-              <p className="text-xs text-slate-600">On orders over $100</p>
+              <p className="text-sm font-medium">Miễn phí vận chuyển</p>
+              <p className="text-xs text-slate-600">Đơn hàng trên $100</p>
             </div>
             <div className="text-center">
               <Shield className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <p className="text-sm font-medium">Quality Guarantee</p>
-              <p className="text-xs text-slate-600">Premium products</p>
+              <p className="text-sm font-medium">Bảo hành chất lượng</p>
+              <p className="text-xs text-slate-600">Sản phẩm cao cấp</p>
             </div>
             <div className="text-center">
               <RotateCcw className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <p className="text-sm font-medium">Easy Returns</p>
-              <p className="text-xs text-slate-600">30-day policy</p>
+              <p className="text-sm font-medium">Đổi trả dễ dàng</p>
+              <p className="text-xs text-slate-600">Chính sách 30 ngày</p>
             </div>
           </div>
         </div>
@@ -190,9 +260,9 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
       <div className="mt-16">
         <Tabs defaultValue="description" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="description">Description</TabsTrigger>
-            <TabsTrigger value="specifications">Specifications</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews ({product.reviews})</TabsTrigger>
+            <TabsTrigger value="description">Mô tả</TabsTrigger>
+            <TabsTrigger value="specifications">Thông số</TabsTrigger>
+            <TabsTrigger value="reviews">Đánh giá ({product.reviews})</TabsTrigger>
           </TabsList>
           
           <TabsContent value="description" className="mt-6">
@@ -201,9 +271,9 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
                 {product.description}
               </p>
               <p className="text-slate-600 leading-relaxed mt-4">
-                This premium product combines exceptional quality with innovative design. 
-                Crafted with attention to detail and built to last, it represents the perfect 
-                balance of functionality and style.
+                Sản phẩm cao cấp này kết hợp chất lượng đặc biệt với thiết kế sáng tạo. 
+                Được chế tác tỉ mỉ và xây dựng để tồn tại lâu dài, nó đại diện cho sự cân bằng hoàn hảo 
+                giữa chức năng và phong cách.
               </p>
             </div>
           </TabsContent>
@@ -211,10 +281,10 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
           <TabsContent value="specifications" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="font-semibold text-lg mb-4">Product Details</h3>
+                <h3 className="font-semibold text-lg mb-4">Chi tiết sản phẩm</h3>
                 <dl className="space-y-2">
                   <div className="flex justify-between">
-                    <dt className="text-slate-600">Category:</dt>
+                    <dt className="text-slate-600">Danh mục:</dt>
                     <dd className="font-medium">{product.category}</dd>
                   </div>
                   <div className="flex justify-between">
@@ -222,8 +292,8 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
                     <dd className="font-medium">{product.id}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-slate-600">Stock:</dt>
-                    <dd className="font-medium">{product.stock} units</dd>
+                    <dt className="text-slate-600">Tồn kho:</dt>
+                    <dd className="font-medium">{product.stock} sản phẩm</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-slate-600">Tags:</dt>
@@ -251,7 +321,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
                       />
                     ))}
                   </div>
-                  <div className="text-sm text-slate-600">{product.reviews} reviews</div>
+                  <div className="text-sm text-slate-600">{product.reviews} đánh giá</div>
                 </div>
               </div>
               
@@ -263,11 +333,11 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
                         <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
                       ))}
                     </div>
-                    <span className="font-medium">John D.</span>
-                    <span className="text-slate-500 text-sm">2 days ago</span>
+                    <span className="font-medium">Nguyễn Văn A</span>
+                    <span className="text-slate-500 text-sm">2 ngày trước</span>
                   </div>
                   <p className="text-slate-600">
-                    Excellent product! The quality exceeds expectations and delivery was super fast.
+                    Sản phẩm tuyệt vời! Chất lượng vượt mong đợi và giao hàng rất nhanh.
                   </p>
                 </div>
               </div>
@@ -279,7 +349,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <div className="mt-16">
-          <h2 className="text-3xl font-bold text-slate-900 mb-8">Related Products</h2>
+          <h2 className="text-3xl font-bold text-slate-900 mb-8">Sản phẩm liên quan</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {relatedProducts.map((relatedProduct) => (
               <ProductCard key={relatedProduct.id} product={relatedProduct} />

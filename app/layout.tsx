@@ -10,6 +10,7 @@ import { WishlistProvider } from '@/contexts/WishlistContext';
 import { SearchProvider } from '@/contexts/SearchContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -35,6 +36,7 @@ export default function RootLayout({
                   </main>
                   {!isAdminPage && <Footer />}
                 </div>
+                <Toaster />
               </CartProvider>
             </WishlistProvider>
           </SearchProvider>

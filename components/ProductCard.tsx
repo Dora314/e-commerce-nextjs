@@ -2,12 +2,15 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Product } from '@/types/product';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductCardProps {
   product: Product;
@@ -16,20 +19,71 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { dispatch: cartDispatch } = useCart();
   const { state: wishlistState, dispatch: wishlistDispatch } = useWishlist();
+  const { state: authState } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
 
   const isInWishlist = wishlistState.items.some(item => item.id === product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
+    
+    // Check if user is authenticated
+    if (!authState.isAuthenticated) {
+      toast({
+        title: "Yêu cầu đăng nhập",
+        description: "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng",
+        variant: "destructive",
+      });
+      router.push('/login');
+      return;
+    }
+
+    if (product.stock === 0) {
+      toast({
+        title: "Hết hàng",
+        description: "Sản phẩm này hiện đã hết hàng",
+        variant: "destructive",
+      });
+      return;
+    }
+
     cartDispatch({ type: 'ADD_ITEM', payload: product });
+    toast({
+      title: "Đã thêm vào giỏ hàng",
+      description: `${product.name} đã được thêm vào giỏ hàng`,
+      variant: "default",
+    });
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
+    
+    // Check if user is authenticated
+    if (!authState.isAuthenticated) {
+      toast({
+        title: "Yêu cầu đăng nhập",
+        description: "Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích",
+        variant: "destructive",
+      });
+      router.push('/login');
+      return;
+    }
+
     if (isInWishlist) {
       wishlistDispatch({ type: 'REMOVE_ITEM', payload: product.id });
+      toast({
+        title: "Đã xóa khỏi danh sách yêu thích",
+        description: `${product.name} đã được xóa khỏi danh sách yêu thích`,
+        variant: "default",
+      });
     } else {
       wishlistDispatch({ type: 'ADD_ITEM', payload: product });
+      toast({
+        title: "Đã thêm vào danh sách yêu thích",
+        description: `${product.name} đã được thêm vào danh sách yêu thích`,
+        variant: "default",
+      });
     }
   };
 
@@ -85,7 +139,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               disabled={product.stock === 0}
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
-              {product.stock === 0 ? 'Out of Stock' : 'Quick Add'}
+              {product.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
             </Button>
           </div>
         </div>
@@ -139,7 +193,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             
             <div className="text-right">
               <p className={`text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                {product.stock > 0 ? `${product.stock} còn lại` : 'Hết hàng'}
               </p>
             </div>
           </div>
