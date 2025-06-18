@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Package, 
@@ -21,6 +21,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -39,7 +40,50 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
+  const { state: authState, logout } = useAuth();
+
+  useEffect(() => {
+    // Wait for auth state to be loaded
+    if (!authState.isLoading) {
+      setIsLoading(false);
+      
+      // Check if user is authenticated and is admin
+      if (!authState.isAuthenticated) {
+        router.push('/login');
+        return;
+      }
+
+      if (authState.user?.role !== 'admin') {
+        router.push('/');
+        return;
+      }
+    }
+  }, [authState, router]);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
+  // Show loading state while checking authentication
+  if (isLoading || authState.isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render admin layout if user is not authenticated or not admin
+  if (!authState.isAuthenticated || authState.user?.role !== 'admin') {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -140,10 +184,10 @@ export default function AdminLayout({
               
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">Admin User</p>
-                  <p className="text-xs text-gray-500">admin@elitestore.com</p>
+                  <p className="text-sm font-medium text-gray-900">{authState.user?.name}</p>
+                  <p className="text-xs text-gray-500">{authState.user?.email}</p>
                 </div>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" onClick={handleLogout}>
                   <LogOut className="h-5 w-5" />
                 </Button>
               </div>

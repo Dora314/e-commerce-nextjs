@@ -1,6 +1,9 @@
+'use client';
+
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { WishlistProvider } from '@/contexts/WishlistContext';
@@ -10,16 +13,14 @@ import Footer from '@/components/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'EliteStore - Premium E-commerce Experience',
-  description: 'Discover premium quality products with exceptional service. Electronics, Fashion, Home & Garden, Sports and more.',
-};
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isAdminPage = pathname?.startsWith('/admin');
+
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -28,11 +29,11 @@ export default function RootLayout({
             <WishlistProvider>
               <CartProvider>
                 <div className="min-h-screen flex flex-col">
-                  <Header />
+                  {!isAdminPage && <Header />}
                   <main className="flex-1">
                     {children}
                   </main>
-                  <Footer />
+                  {!isAdminPage && <Footer />}
                 </div>
               </CartProvider>
             </WishlistProvider>
