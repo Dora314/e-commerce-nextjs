@@ -110,7 +110,7 @@ export default function ProfilePage() {
                 <Button
                   onClick={() => setIsEditing(true)}
                   variant="outline"
-                  className="border-white/30 text-w hover:bg-white hover:text-slate-900"
+                  className="border-white/30 text-whitư hover:bg-white hover:text-slate-900"
                 >
                   <Edit className="h-4 w-4 mr-2 " />
                   Edit Profile
