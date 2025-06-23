@@ -18,7 +18,7 @@ export default function LoginPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const { login, state } = useAuth();
+  const { login, isLoading } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -99,71 +99,78 @@ export default function LoginPage() {
 
             <div>
               <Label htmlFor="email">Email Address</Label>
-              <div className="relative mt-1">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
+              <div className="relative mt-2">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <Input 
                   id="email"
-                  type="email"
+                  type="email" 
+                  placeholder="john@example.com" 
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   className="pl-10"
-                  placeholder="Enter your email"
-                  disabled={state.isLoading}
+                  required
                 />
               </div>
             </div>
 
             <div>
               <Label htmlFor="password">Password</Label>
-              <div className="relative mt-1">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
+              <div className="relative mt-2">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <Input 
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'} 
+                  placeholder="••••••••" 
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   className="pl-10 pr-10"
-                  placeholder="Enter your password"
-                  disabled={state.isLoading}
+                  required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input type="checkbox" className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                <span className="ml-2 text-sm text-slate-600">Remember me</span>
-              </label>
-              <Link href="/forgot-password" className="text-sm text-emerald-600 hover:text-emerald-700">
-                Forgot password?
-              </Link>
+              <div className="flex items-center">
+                <Input id="remember-me" type="checkbox" className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                <Label htmlFor="remember-me" className="ml-2 block text-sm text-slate-900">Remember me</Label>
+              </div>
+              <div className="text-sm">
+                <Link href="/forgot-password" className="font-medium text-emerald-600 hover:text-emerald-500">
+                  Forgot your password?
+                </Link>
+              </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-              size="lg"
-              disabled={state.isLoading}
+            <Button 
+              type="submit" 
+              data-testid="login-button"
+              className="w-full bg-slate-900 hover:bg-slate-800" 
+              disabled={isLoading}
             >
-              {state.isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                <>
+                  <LogIn className="mr-2 h-5 w-5" />
+                  Login
+                </>
+              )}
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-slate-600">
-              Don't have an account?{' '}
-              <Link href="/register" className="text-emerald-600 hover:text-emerald-700 font-medium">
-                Sign up
-              </Link>
-            </p>
-          </div>
+          <p className="mt-8 text-center text-sm text-slate-600">
+            Don't have an account?{' '}
+            <Link href="/register" className="font-medium text-emerald-600 hover:text-emerald-500">
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
     </div>

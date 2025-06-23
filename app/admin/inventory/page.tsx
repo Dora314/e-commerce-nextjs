@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,11 +41,76 @@ import {
   MoreHorizontal,
   Eye
 } from 'lucide-react';
-import { mockInventory } from '@/lib/mockData';
 import { InventoryItem } from '@/types/product';
 import InventoryItemForm from '@/components/admin/InventoryItemForm';
 
+function RestockForm({ 
+  item, 
+  onRestock, 
+  onCancel 
+}: { 
+  item: InventoryItem; 
+  onRestock: (quantity: number) => void;
+  onCancel: () => void;
+}) {
+  const [quantity, setQuantity] = useState('');
+  const [notes, setNotes] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const qty = parseInt(quantity);
+    if (qty > 0) {
+      onRestock(qty);
+    }
+  };
+
+  const suggestedQuantity = Math.max(0, item.maxStock - item.currentStock);
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <h3 className="font-semibold">{item.name}</h3>
+        <p className="text-sm text-gray-600">SKU: {item.sku}</p>
+        <p className="text-sm text-gray-600">Current Stock: {item.currentStock}</p>
+        <p className="text-sm text-gray-600">Suggested Quantity: {suggestedQuantity}</p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Restock Quantity</label>
+        <Input
+          type="number"
+          value={quantity}
+          onChange={(e) => setQuantity(e.target.value)}
+          placeholder={`e.g., ${suggestedQuantity}`}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Notes (Optional)</label>
+        <Input
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="e.g., Supplier order #123"
+        />
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit">
+          Confirm Restock
+        </Button>
+      </div>
+    </form>
+  );
+}
+
 export default function AdminInventoryPage() {
+  const { token } = useAuth();
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isRestockDialogOpen, setIsRestockDialogOpen] = useState(false);
@@ -52,17 +118,43 @@ export default function AdminInventoryPage() {
   const [isEditItemOpen, setIsEditItemOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
-  const filteredInventory = mockInventory.filter(item => {
+  useEffect(() => {
+    const fetchInventory = async () => {
+      if (!token) return;
+      try {
+        setLoading(true);
+        const res = await fetch('/api/admin/inventory', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+          throw new Error('Failed to fetch inventory data');
+        }
+        const data = await res.json();
+        setInventory(data);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInventory();
+  }, [token]);
+
+  const filteredInventory = inventory.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.sku.toLowerCase().includes(searchTerm.toLowerCase());
+                         (item.sku && item.sku.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const totalItems = mockInventory.length;
-  const totalValue = mockInventory.reduce((sum, item) => sum + item.totalValue, 0);
-  const lowStockItems = mockInventory.filter(item => item.status === 'low-stock').length;
-  const outOfStockItems = mockInventory.filter(item => item.status === 'out-of-stock').length;
+  const totalItems = inventory.length;
+  const totalValue = inventory.reduce((sum, item) => sum + item.totalValue, 0);
+  const lowStockItems = inventory.filter(item => item.status === 'low-stock').length;
+  const outOfStockItems = inventory.filter(item => item.status === 'out-of-stock').length;
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -344,70 +436,5 @@ export default function AdminInventoryPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-function RestockForm({ 
-  item, 
-  onRestock, 
-  onCancel 
-}: { 
-  item: InventoryItem; 
-  onRestock: (quantity: number) => void;
-  onCancel: () => void;
-}) {
-  const [quantity, setQuantity] = useState('');
-  const [notes, setNotes] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const qty = parseInt(quantity);
-    if (qty > 0) {
-      onRestock(qty);
-    }
-  };
-
-  const suggestedQuantity = Math.max(0, item.maxStock - item.currentStock);
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-sm text-gray-600">SKU: {item.sku}</p>
-        <p className="text-sm text-gray-600">Current Stock: {item.currentStock}</p>
-        <p className="text-sm text-gray-600">Suggested Quantity: {suggestedQuantity}</p>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Restock Quantity</label>
-        <Input
-          type="number"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          placeholder="Enter quantity to add"
-          min="1"
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Notes (Optional)</label>
-        <Input
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Add any notes about this restock"
-        />
-      </div>
-
-      <div className="flex gap-3 justify-end">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit" className="gap-2">
-          <CheckCircle className="h-4 w-4" />
-          Confirm Restock
-        </Button>
-      </div>
-    </form>
   );
 }

@@ -93,7 +93,7 @@ export default function Home() {
                 Featured
               </Badge>
             </div>
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">Premium Picks</h2>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4" data-testid="featured-products-heading">Premium Picks</h2>
             <p className="text-xl text-slate-600 max-w-2xl mx-auto">
               Hand-selected products that represent the best of what we offer
             </p>

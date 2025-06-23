@@ -20,7 +20,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const { register, state } = useAuth();
+  const { register, isLoading } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -61,6 +61,7 @@ export default function RegisterPage() {
     }
 
     const success = await register(formData.name, formData.email, formData.password);
+
     if (success) {
       toast({
         title: "Registration successful",
@@ -72,7 +73,7 @@ export default function RegisterPage() {
       setErrors({ email: 'Email already exists' });
       toast({
         title: "Registration failed",
-        description: "Email is already in use",
+        description: "Email is already in use. Please try another.",
         variant: "destructive",
       });
     }
@@ -118,7 +119,7 @@ export default function RegisterPage() {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   className={`pl-10 ${errors.name ? 'border-red-500' : ''}`}
                   placeholder="Enter your full name"
-                  disabled={state.isLoading}
+                  disabled={isLoading}
                 />
               </div>
               {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -135,7 +136,7 @@ export default function RegisterPage() {
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
                   placeholder="Enter your email"
-                  disabled={state.isLoading}
+                  disabled={isLoading}
                 />
               </div>
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -152,7 +153,7 @@ export default function RegisterPage() {
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   className={`pl-10 pr-10 ${errors.password ? 'border-red-500' : ''}`}
                   placeholder="Create a password"
-                  disabled={state.isLoading}
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
@@ -176,7 +177,7 @@ export default function RegisterPage() {
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   className={`pl-10 pr-10 ${errors.confirmPassword ? 'border-red-500' : ''}`}
                   placeholder="Confirm your password"
-                  disabled={state.isLoading}
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
@@ -207,9 +208,9 @@ export default function RegisterPage() {
               type="submit"
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
               size="lg"
-              disabled={state.isLoading}
+              disabled={isLoading}
             >
-              {state.isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
 
