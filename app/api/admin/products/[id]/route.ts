@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth'; // Corrected import
+import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import prisma from '@/lib/prisma';
 
 // GET a single product
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const session = await auth();
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!token || token.role !== 'ADMIN') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -27,10 +27,10 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 // UPDATE a product
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    const session = await auth();
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!token || token.role !== 'ADMIN') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -48,10 +48,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // DELETE a product
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const session = await auth();
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!token || token.role !== 'ADMIN') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

@@ -1,6 +1,7 @@
 import { Product, Category } from '@/types/product';
-import { mockInventory } from './mockData';
+import prisma from './prisma';
 
+// Categories are still static for now, but could be moved to database later
 export const categories: Category[] = [
   {
     id: '1',
@@ -60,44 +61,39 @@ export const categories: Category[] = [
   }
 ];
 
-export const products: Product[] = mockInventory.map((item, index) => ({
-  id: item.id,
-  name: item.name,
-  description: `This is a high-quality ${item.name}. Perfect for all your needs. It is a mock description.`,
-  price: item.unitCost,
-  originalPrice: item.unitCost * 1.2,
-  image: `https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=800&seed=${item.id}`,
-  images: [
-    `https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=800&seed=${item.id}`,
-    `https://images.pexels.com/photos/1092644/pexels-photo-1092644.jpeg?auto=compress&cs=tinysrgb&w=800&seed=${item.id}`,
-  ],
-  category: item.category,
-  stock: item.currentStock,
-  featured: index < 5, // Feature the first 5 products
-  rating: 4.5,
-  reviews: Math.floor(Math.random() * 100),
-  tags: [item.category, 'mock'],
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-}));
-
-// Let's assume getProducts and searchProducts exist and are using mock data
+// Get products from database
 export async function getProducts(categorySlug?: string): Promise<Product[]> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100));
+  try {
+    const whereClause = categorySlug ? {
+      category: categories.find(c => c.slug === categorySlug)?.name
+    } : {};
 
-  let productList = products;
+    const dbProducts = await prisma.product.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' }
+    });
 
-  if (categorySlug) {
-    const category = categories.find(c => c.slug === categorySlug);
-    if (category) {
-      productList = productList.filter(p => p.category === category.name);
-    } else {
-      return []; // No category found, return empty
-    }
+    return dbProducts.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      originalPrice: product.originalPrice || undefined,
+      image: product.image,
+      images: product.images,
+      category: product.category,
+      stock: product.stock,
+      featured: false, // Could be added to DB schema later
+      rating: product.rating,
+      reviews: product.reviews,
+      tags: [product.category],
+      createdAt: product.createdAt.toISOString(),
+      updatedAt: product.updatedAt.toISOString(),
+    }));
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
   }
-
-  return productList;
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | undefined> {
@@ -106,25 +102,75 @@ export async function getCategoryBySlug(slug: string): Promise<Category | undefi
   return categories.find(c => c.slug === slug);
 }
 
-
 export async function searchProducts(query: string): Promise<Product[]> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100));
+  try {
+    if (!query) {
+      return [];
+    }
 
-  if (!query) {
+    const lowercasedQuery = query.toLowerCase();
+    const dbProducts = await prisma.product.findMany({
+      where: {
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { description: { contains: query, mode: 'insensitive' } },
+          { category: { contains: query, mode: 'insensitive' } }
+        ]
+      }
+    });
+
+    return dbProducts.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      originalPrice: product.originalPrice || undefined,
+      image: product.image,
+      images: product.images,
+      category: product.category,
+      stock: product.stock,
+      featured: false,
+      rating: product.rating,
+      reviews: product.reviews,
+      tags: [product.category],
+      createdAt: product.createdAt.toISOString(),
+      updatedAt: product.updatedAt.toISOString(),
+    }));
+  } catch (error) {
+    console.error('Error searching products:', error);
     return [];
   }
-
-  const lowercasedQuery = query.toLowerCase();
-  return products.filter(product =>
-    product.name.toLowerCase().includes(lowercasedQuery) ||
-    product.description.toLowerCase().includes(lowercasedQuery) ||
-    product.category.toLowerCase().includes(lowercasedQuery)
-  );
 }
 
 export async function getProductById(id: string): Promise<Product | undefined> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return products.find(p => p.id === id);
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id }
+    });
+
+    if (!product) {
+      return undefined;
+    }
+
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      originalPrice: product.originalPrice || undefined,
+      image: product.image,
+      images: product.images,
+      category: product.category,
+      stock: product.stock,
+      featured: false,
+      rating: product.rating,
+      reviews: product.reviews,
+      tags: [product.category],
+      createdAt: product.createdAt.toISOString(),
+      updatedAt: product.updatedAt.toISOString(),
+    };
+  } catch (error) {
+    console.error('Error fetching product by ID:', error);
+    return undefined;
+  }
 }

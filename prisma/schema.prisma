@@ -38,6 +38,13 @@ model Product {
   category      String
   rating        Float     @default(0)
   reviews       Int       @default(0)
+  // Added inventory management fields
+  sku           String?   @unique
+  minStock      Int       @default(5)
+  maxStock      Int       @default(100)
+  reorderPoint  Int       @default(10)
+  supplier      String?
+  unitCost      Float?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   CartItem      CartItem[]      @relation("ProductCartItems")
@@ -115,6 +122,19 @@ model WishlistItem {
   product    Product  @relation(fields: [productId], references: [id], name: "ProductWishlistItems")
 }
 
+model Report {
+  id            String      @id @default(cuid())
+  name          String
+  description   String
+  type          ReportType
+  lastGenerated DateTime    @default(now())
+  size          String
+  status        ReportStatus @default(READY)
+  filePath      String?     // Path to generated report file
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
 enum Role {
   CUSTOMER
   ADMIN
@@ -133,4 +153,17 @@ enum PaymentStatus {
   PENDING
   PAID
   FAILED
+}
+
+enum ReportType {
+  SALES
+  INVENTORY
+  CUSTOMERS
+  FINANCIAL
+}
+
+enum ReportStatus {
+  READY
+  GENERATING
+  ERROR
 }

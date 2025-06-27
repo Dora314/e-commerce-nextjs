@@ -1,13 +1,14 @@
 import Hero from '@/components/Hero';
 import ProductCard from '@/components/ProductCard';
-import { products, categories } from '@/lib/data';
+import { getProducts, categories } from '@/lib/data';
 import Link from 'next/link';
 import { ArrowRight, TrendingUp, Award, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-export default function Home() {
-  const featuredProducts = products.filter(product => product.featured);
+export default async function Home() {
+  const products = await getProducts();
+  const featuredProducts = products.slice(0, 8); // Show first 8 as featured
 
   return (
     <div>

@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Filter, Grid, List, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { products } from '@/lib/data';
+import { getProducts } from '@/lib/data';
 import ProductCard from '@/components/ProductCard';
-import { Category } from '@/types/product';
+import { Category, Product } from '@/types/product';
 
 interface CategoryPageClientProps {
   category: Category;
@@ -18,12 +18,28 @@ interface CategoryPageClientProps {
 export default function CategoryPageClient({ category }: CategoryPageClientProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const productData = await getProducts(category.slug);
+        setProducts(productData);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [category.slug]);
   const [priceRange, setPriceRange] = useState('all');
 
-  // Filter products by category
-  let categoryProducts = products.filter(product => 
-    product.category.toLowerCase() === category.name.toLowerCase()
-  );
+  // Products are already filtered by category from getProducts(category.slug)
+  let categoryProducts = products;
 
   // Apply search filter
   if (searchTerm) {

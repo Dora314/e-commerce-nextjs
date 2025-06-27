@@ -1,77 +1,140 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+import prisma from '@/lib/prisma';
 
-const availableReports = [
+// Type assertion for Prisma reports until types are updated
+const prismaReports = (prisma as any).report;
+
+// Default reports that will be created if they don't exist
+const defaultReports = [
     {
-        id: 'sales-summary',
         name: 'Sales Summary Report',
-        description:
-            'Comprehensive overview of sales performance, trends, and top products',
-        type: 'sales',
-        lastGenerated: '2024-01-20',
+        description: 'Comprehensive overview of sales performance, trends, and top products',
+        type: 'SALES' as const,
         size: '2.4 MB',
-        status: 'ready',
     },
     {
-        id: 'inventory-status',
         name: 'Inventory Status Report',
-        description:
-            'Current stock levels, low stock alerts, and inventory valuation',
-        type: 'inventory',
-        lastGenerated: '2024-01-19',
+        description: 'Current stock levels, low stock alerts, and inventory valuation',
+        type: 'INVENTORY' as const,
         size: '1.8 MB',
-        status: 'ready',
     },
     {
-        id: 'customer-analytics',
         name: 'Customer Analytics Report',
-        description:
-            'Customer behavior, demographics, and lifetime value analysis',
-        type: 'customers',
-        lastGenerated: '2024-01-18',
+        description: 'Customer behavior, demographics, and lifetime value analysis',
+        type: 'CUSTOMERS' as const,
         size: '3.1 MB',
-        status: 'ready',
     },
     {
-        id: 'financial-overview',
         name: 'Financial Overview Report',
-        description:
-            'Revenue, expenses, profit margins, and financial KPIs',
-        type: 'financial',
-        lastGenerated: '2024-01-17',
+        description: 'Revenue, expenses, profit margins, and financial KPIs',
+        type: 'FINANCIAL' as const,
         size: '1.5 MB',
-        status: 'ready',
     },
     {
-        id: 'product-performance',
         name: 'Product Performance Report',
-        description:
-            'Individual product sales, returns, and profitability analysis',
-        type: 'sales',
-        lastGenerated: '2024-01-16',
+        description: 'Individual product sales, returns, and profitability analysis',
+        type: 'SALES' as const,
         size: '4.2 MB',
-        status: 'generating',
     },
     {
-        id: 'tax-report',
         name: 'Tax Report',
-        description:
-            'Tax calculations, exemptions, and compliance documentation',
-        type: 'financial',
-        lastGenerated: '2024-01-15',
+        description: 'Tax calculations, exemptions, and compliance documentation',
+        type: 'FINANCIAL' as const,
         size: '892 KB',
-        status: 'ready',
+    },
+    {
+        name: 'Monthly Sales Report',
+        description: 'Detailed monthly sales breakdown by category and region',
+        type: 'SALES' as const,
+        size: '2.8 MB',
+    },
+    {
+        name: 'Customer Retention Analysis',
+        description: 'Customer loyalty metrics and retention strategies',
+        type: 'CUSTOMERS' as const,
+        size: '1.9 MB',
     },
 ];
 
-export async function GET() {
-    const session = await auth();
+async function ensureDefaultReports() {
+    for (const report of defaultReports) {
+        const existingReport = await prismaReports.findFirst({
+            where: { name: report.name }
+        });
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+        if (!existingReport) {
+            await prismaReports.create({
+                data: report
+            });
+        }
+    }
+}
+
+export async function GET(req: NextRequest) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+    if (!token || token.role !== 'ADMIN') {
         return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    // In a real application, you would generate these reports on the fly
-    // or retrieve them from a storage service.
-    return NextResponse.json(availableReports);
+    try {
+        // Ensure default reports exist
+        await ensureDefaultReports();
+
+        // Get all reports from database
+        const reports = await prismaReports.findMany({
+            orderBy: {
+                lastGenerated: 'desc'
+            }
+        });
+
+        // Format reports for frontend
+        const formattedReports = reports.map((report: any) => ({
+            id: report.id,
+            name: report.name,
+            description: report.description,
+            type: report.type.toLowerCase(),
+            lastGenerated: report.lastGenerated.toISOString().split('T')[0],
+            size: report.size,
+            status: report.status.toLowerCase(),
+        }));
+
+        return NextResponse.json(formattedReports);
+    } catch (error) {
+        console.error('[ADMIN_REPORTS_GET]', error);
+        return new NextResponse('Internal error', { status: 500 });
+    }
+}
+
+export async function POST(request: NextRequest) {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+
+    if (!token || token.role !== 'ADMIN') {
+        return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    try {
+        const body = await request.json();
+        const { name, description, type } = body;
+
+        if (!name || !description || !type) {
+            return new NextResponse('Missing required fields', { status: 400 });
+        }
+
+        const report = await prismaReports.create({
+            data: {
+                name,
+                description,
+                type: type.toUpperCase(),
+                size: '0 KB', // Will be updated when report is generated
+                status: 'GENERATING'
+            }
+        });
+
+        return NextResponse.json(report);
+    } catch (error) {
+        console.error('[ADMIN_REPORTS_POST]', error);
+        return new NextResponse('Internal error', { status: 500 });
+    }
 }

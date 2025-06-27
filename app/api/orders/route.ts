@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 
 async function getUserIdFromToken(req: Request): Promise<string | null> {
     const userPayload = await verifyToken(req);
-    return userPayload ? userPayload.id : null;
+    return userPayload ? userPayload.userId : null;
 }
 
 // GET user's order history

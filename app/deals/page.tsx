@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { products } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { getProducts } from '@/lib/data';
+import { Product } from '@/types/product';
 import ProductCard from '@/components/ProductCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,24 @@ import { Search, Percent, Clock, Flame, TrendingDown } from 'lucide-react';
 export default function DealsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('discount');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const productData = await getProducts();
+        setProducts(productData);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
   // Filter products that have original prices (deals)
   let dealProducts = products.filter(product => product.originalPrice);
