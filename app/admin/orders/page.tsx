@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import Image from 'next/image';
 import { 
   Search, 
   ShoppingCart, 
@@ -41,95 +42,83 @@ import {
   CheckCircle,
   XCircle
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface Product {
+  id: string;
+  name: string;
+  images: { url: string }[];
+}
+
+interface OrderItem {
+  id: string;
+  quantity: number;
+  price: number;
+  product: Product;
+}
 
 interface Order {
   id: string;
   customer: string;
   email: string;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  items: number;
+  status: string;
+  items: OrderItem[];
   date: string;
   paymentMethod: string;
   shippingAddress: string;
 }
 
-const mockOrders: Order[] = [
-  {
-    id: 'ORD-001',
-    customer: 'John Doe',
-    email: 'john@example.com',
-    total: 299.99,
-    status: 'delivered',
-    items: 2,
-    date: '2024-01-20',
-    paymentMethod: 'Credit Card',
-    shippingAddress: '123 Main St, City, State 12345'
-  },
-  {
-    id: 'ORD-002',
-    customer: 'Jane Smith',
-    email: 'jane@example.com',
-    total: 149.99,
-    status: 'shipped',
-    items: 1,
-    date: '2024-01-19',
-    paymentMethod: 'PayPal',
-    shippingAddress: '456 Oak Ave, City, State 67890'
-  },
-  {
-    id: 'ORD-003',
-    customer: 'Bob Johnson',
-    email: 'bob@example.com',
-    total: 599.99,
-    status: 'processing',
-    items: 3,
-    date: '2024-01-18',
-    paymentMethod: 'Credit Card',
-    shippingAddress: '789 Pine St, City, State 54321'
-  },
-  {
-    id: 'ORD-004',
-    customer: 'Alice Brown',
-    email: 'alice@example.com',
-    total: 89.99,
-    status: 'pending',
-    items: 1,
-    date: '2024-01-17',
-    paymentMethod: 'Apple Pay',
-    shippingAddress: '321 Elm St, City, State 98765'
-  },
-  {
-    id: 'ORD-005',
-    customer: 'Charlie Wilson',
-    email: 'charlie@example.com',
-    total: 199.99,
-    status: 'cancelled',
-    items: 2,
-    date: '2024-01-16',
-    paymentMethod: 'Credit Card',
-    shippingAddress: '654 Maple Ave, City, State 13579'
-  }
-];
-
 export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailOpen, setIsOrderDetailOpen] = useState(false);
+  const { token } = useAuth();
 
-  const filteredOrders = mockOrders.filter(order => {
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch('/api/admin/orders', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data?.orders || []);
+        } else {
+          console.error("Failed to fetch orders");
+          setOrders([]);
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        setOrders([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (token) {
+      fetchOrders();
+    }
+  }, [token]);
+
+  const filteredOrders = orders.filter(order => {
     const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const totalOrders = mockOrders.length;
-  const totalRevenue = mockOrders.reduce((sum, order) => sum + order.total, 0);
-  const pendingOrders = mockOrders.filter(order => order.status === 'pending').length;
-  const completedOrders = mockOrders.filter(order => order.status === 'delivered').length;
+  const totalOrders = orders.length;
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const pendingOrders = orders.filter(order => order.status.toLowerCase() === 'pending').length;
+  const completedOrders = orders.filter(order => order.status.toLowerCase() === 'delivered').length;
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -140,10 +129,16 @@ export default function AdminOrdersPage() {
       cancelled: { variant: 'destructive' as const, color: 'bg-red-100 text-red-800' }
     };
 
-    const config = statusConfig[status as keyof typeof statusConfig];
+    const lowerCaseStatus = status?.toLowerCase();
+    const config = statusConfig[lowerCaseStatus as keyof typeof statusConfig];
+
+    if (!config) {
+      return <Badge>{status || 'Unknown'}</Badge>;
+    }
+
     return (
       <Badge variant={config.variant} className={config.color}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {status.charAt(0).toUpperCase() + lowerCaseStatus.slice(1)}
       </Badge>
     );
   };
@@ -293,8 +288,8 @@ export default function AdminOrdersPage() {
                     </div>
                   </TableCell>
                   <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
-                  <TableCell>{order.items} items</TableCell>
-                  <TableCell className="font-medium">${order.total}</TableCell>
+                  <TableCell>{order.items.length} items</TableCell>
+                  <TableCell className="font-medium">${order.total.toLocaleString()}</TableCell>
                   <TableCell>{getStatusBadge(order.status)}</TableCell>
                   <TableCell>{order.paymentMethod}</TableCell>
                   <TableCell className="text-right">
@@ -309,25 +304,25 @@ export default function AdminOrdersPage() {
                           <Eye className="h-4 w-4 mr-2" />
                           View Details
                         </DropdownMenuItem>
-                        {order.status === 'pending' && (
+                        {order.status.toLowerCase() === 'pending' && (
                           <DropdownMenuItem onClick={() => updateOrderStatus(order.id, 'processing')}>
                             <Package className="h-4 w-4 mr-2" />
                             Mark Processing
                           </DropdownMenuItem>
                         )}
-                        {order.status === 'processing' && (
+                        {order.status.toLowerCase() === 'processing' && (
                           <DropdownMenuItem onClick={() => updateOrderStatus(order.id, 'shipped')}>
                             <Truck className="h-4 w-4 mr-2" />
                             Mark Shipped
                           </DropdownMenuItem>
                         )}
-                        {order.status === 'shipped' && (
+                        {order.status.toLowerCase() === 'shipped' && (
                           <DropdownMenuItem onClick={() => updateOrderStatus(order.id, 'delivered')}>
                             <CheckCircle className="h-4 w-4 mr-2" />
                             Mark Delivered
                           </DropdownMenuItem>
                         )}
-                        {(order.status === 'pending' || order.status === 'processing') && (
+                        {(order.status.toLowerCase() === 'pending' || order.status.toLowerCase() === 'processing') && (
                           <DropdownMenuItem 
                             onClick={() => updateOrderStatus(order.id, 'cancelled')}
                             className="text-red-600"
@@ -382,12 +377,48 @@ export default function AdminOrdersPage() {
               <div>
                 <h3 className="font-semibold mb-2">Payment Information</h3>
                 <p><strong>Method:</strong> {selectedOrder.paymentMethod}</p>
-                <p><strong>Total:</strong> ${selectedOrder.total}</p>
+                <p><strong>Total:</strong> ${selectedOrder.total.toLocaleString()}</p>
               </div>
               
               <div>
-                <h3 className="font-semibold mb-2">Order Items</h3>
-                <p>{selectedOrder.items} items in this order</p>
+                <h3 className="font-semibold mb-2">Order Items ({selectedOrder.items.length})</h3>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="pl-4">Product</TableHead>
+                        <TableHead>Qty</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead className="pr-4 text-right">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedOrder.items.map((item) => {
+                        const imageUrl = item.product.images && item.product.images.length > 0 ? item.product.images[0].url : '/placeholder.svg';
+                        return (
+                        <TableRow key={item.id}>
+                          <TableCell className="pl-4 py-2">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden">
+                                <Image
+                                  src={imageUrl}
+                                  alt={item.product.name}
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <span className="font-medium">{item.product.name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell>${item.price.toFixed(2)}</TableCell>
+                          <TableCell className="pr-4 py-2 text-right">${(item.quantity * item.price).toFixed(2)}</TableCell>
+                        </TableRow>
+                      )})}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </div>
           )}

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { products } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { getProducts } from '@/lib/data';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,42 @@ export default function AdminDashboard() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const productData = await getProducts();
+        setProducts(productData);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  const handleSaveProduct = () => {
+    // Refresh products after save
+    const loadProducts = async () => {
+      try {
+        const productData = await getProducts();
+        setProducts(productData);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    };
+    loadProducts();
+    setIsAddDialogOpen(false);
+    setIsEditDialogOpen(false);
+  };
+
+  // Get unique categories from products
+  const availableCategories = Array.from(new Set(products.map(p => p.category)));
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -152,7 +188,9 @@ export default function AdminDashboard() {
                     <DialogTitle>Add New Product</DialogTitle>
                   </DialogHeader>
                   <ProductForm 
+                    categories={availableCategories}
                     onClose={() => setIsAddDialogOpen(false)}
+                    onSave={handleSaveProduct}
                   />
                 </DialogContent>
               </Dialog>
@@ -273,10 +311,12 @@ export default function AdminDashboard() {
           {selectedProduct && (
             <ProductForm 
               product={selectedProduct}
+              categories={availableCategories}
               onClose={() => {
                 setIsEditDialogOpen(false);
                 setSelectedProduct(null);
               }}
+              onSave={handleSaveProduct}
             />
           )}
         </DialogContent>

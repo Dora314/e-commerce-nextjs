@@ -1,0 +1,114 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "EliteStore":
+    - /url: /
+  - searchbox "Search products..."
+  - button:
+    - img
+  - img
+  - navigation:
+    - link "Products":
+      - /url: /products
+    - link "Categories":
+      - /url: /categories
+    - link "Deals":
+      - /url: /deals
+  - link:
+    - /url: /wishlist
+    - img
+  - link:
+    - /url: /cart
+    - img
+  - link "Sign In":
+    - /url: /login
+    - button "Sign In"
+  - link "Sign Up":
+    - /url: /register
+    - button "Sign Up"
+- main:
+  - link "Back to Home":
+    - /url: /
+    - img
+    - text: Back to Home
+  - img
+  - heading "Welcome Back" [level=1]
+  - paragraph: Sign in to your EliteStore account
+  - heading "Demo Credentials:" [level=3]
+  - text: User john@example.com / password123 Admin admin@elitestore.com / admin123 Email Address
+  - img
+  - textbox "Email Address"
+  - text: Password
+  - img
+  - textbox "Password"
+  - button:
+    - img
+  - checkbox "Remember me"
+  - text: Remember me
+  - link "Forgot your password?":
+    - /url: /forgot-password
+  - button "Login":
+    - img
+    - text: Login
+  - paragraph:
+    - text: Don't have an account?
+    - link "Sign up":
+      - /url: /register
+- contentinfo:
+  - heading "EliteStore" [level=3]
+  - paragraph: Your premium destination for quality products and exceptional shopping experience.
+  - link:
+    - /url: "#"
+    - img
+  - link:
+    - /url: "#"
+    - img
+  - link:
+    - /url: "#"
+    - img
+  - heading "Quick Links" [level=3]
+  - list:
+    - listitem:
+      - link "Products":
+        - /url: /products
+    - listitem:
+      - link "Categories":
+        - /url: /categories
+    - listitem:
+      - link "Deals":
+        - /url: /deals
+    - listitem:
+      - link "About Us":
+        - /url: /about
+  - heading "Customer Service" [level=3]
+  - list:
+    - listitem:
+      - link "Contact Us":
+        - /url: /contact
+    - listitem:
+      - link "Shipping Info":
+        - /url: /shipping
+    - listitem:
+      - link "Returns":
+        - /url: /returns
+    - listitem:
+      - link "FAQ":
+        - /url: /faq
+  - heading "Contact Info" [level=3]
+  - img
+  - text: 123 Commerce St, City, State 12345
+  - img
+  - text: +1 (555) 123-4567
+  - img
+  - text: contact@elitestore.com
+  - separator
+  - paragraph: © 2024 EliteStore. All rights reserved.
+  - link "Privacy Policy":
+    - /url: /privacy
+  - link "Terms of Service":
+    - /url: /terms
+- region "Notifications (F8)":
+  - list
+- alert
+```

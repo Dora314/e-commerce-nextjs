@@ -13,9 +13,10 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export default function SearchBar({ className = '', placeholder = 'Search products...' }: SearchBarProps) {
+export default function SearchBar({ className, placeholder = "Search products..." }: SearchBarProps) {
   const { state, search, clearSearch, hideResults } = useSearch();
   const [inputValue, setInputValue] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,36 +46,38 @@ export default function SearchBar({ className = '', placeholder = 'Search produc
   };
 
   return (
-    <div ref={searchRef} className={`relative ${className}`}>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-        <Input
-          value={inputValue}
-          onChange={handleInputChange}
-          placeholder={placeholder}
-          className="pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white"
-        />
-        {(inputValue || state.isSearching) && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            {state.isSearching ? (
-              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={handleClear}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
+    <div className={`relative ${className}`} ref={searchRef}>
+      <Input
+        type="search"
+        placeholder={placeholder}
+        value={inputValue}
+        onChange={handleInputChange}
+        className="pr-10"
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        data-testid="search-input"
+      />
+      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+        {state.isSearching ? (
+          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={handleClear}
+            data-testid="clear-search-button"
+          >
+            <X className="h-3 w-3" />
+          </Button>
         )}
       </div>
-
-      {/* Search Results Dropdown */}
-      {state.showResults && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+      {isFocused && (inputValue.length > 2 || state.results.length > 0) && (
+        <div
+          data-testid="search-results"
+          className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-lg border z-10 max-h-96 overflow-y-auto"
+        >
           {state.results.length > 0 ? (
             <>
               <div className="p-3 border-b border-gray-100">
@@ -89,6 +92,7 @@ export default function SearchBar({ className = '', placeholder = 'Search produc
                     href={`/products/${product.id}`}
                     onClick={handleResultClick}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                    data-testid="search-result-item"
                   >
                     <img
                       src={product.image}

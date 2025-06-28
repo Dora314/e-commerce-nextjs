@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { Product } from '@/types/product';
-import { products } from '@/lib/data';
+import debounce from 'lodash.debounce';
 
 interface SearchState {
   query: string;
@@ -28,36 +28,48 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
     showResults: false
   });
 
+  const debouncedSearch = useCallback(
+    debounce(async (query: string) => {
+      if (query.trim() === '') {
+        setState(prev => ({ 
+          ...prev, 
+          results: [], 
+          isSearching: false, 
+          showResults: false 
+        }));
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/products/search?q=${encodeURIComponent(query)}`);
+        if (!response.ok) {
+          throw new Error('Search request failed');
+        }
+        const searchResults = await response.json();
+        setState(prev => ({
+          ...prev,
+          results: searchResults,
+          isSearching: false,
+          showResults: true
+        }));
+      } catch (error) {
+        console.error("Failed to fetch search results:", error);
+        setState(prev => ({
+          ...prev,
+          results: [],
+          isSearching: false,
+          showResults: true // Show no results found
+        }));
+      }
+    }, 300), // 300ms debounce delay
+    []
+  );
+
   const search = (query: string) => {
     setState(prev => ({ ...prev, query, isSearching: true }));
-
-    if (query.trim() === '') {
-      setState(prev => ({ 
-        ...prev, 
-        results: [], 
-        isSearching: false, 
-        showResults: false 
-      }));
-      return;
-    }
-
-    // Simulate search delay
-    setTimeout(() => {
-      const searchResults = products.filter(product =>
-        product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.description.toLowerCase().includes(query.toLowerCase()) ||
-        product.category.toLowerCase().includes(query.toLowerCase()) ||
-        product.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-      );
-
-      setState(prev => ({
-        ...prev,
-        results: searchResults,
-        isSearching: false,
-        showResults: true
-      }));
-    }, 300);
+    debouncedSearch(query);
   };
+
 
   const clearSearch = () => {
     setState({

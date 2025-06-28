@@ -1,9 +1,6 @@
-'use client';
-
-import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { usePathname } from 'next/navigation';
+import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { WishlistProvider } from '@/contexts/WishlistContext';
@@ -14,32 +11,31 @@ import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({ subsets: ['latin'] });
 
+// Statically define metadata
+export const metadata: Metadata = {
+  title: 'E-Commerce Store',
+  description: 'An e-commerce store built with Next.js',
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isAdminPage = pathname?.startsWith('/admin');
-
   return (
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <SearchProvider>
+          <CartProvider>
             <WishlistProvider>
-              <CartProvider>
-                <div className="min-h-screen flex flex-col">
-                  {!isAdminPage && <Header />}
-                  <main className="flex-1">
-                    {children}
-                  </main>
-                  {!isAdminPage && <Footer />}
-                </div>
+              <SearchProvider>
+                <Header />
+                <main>{children}</main>
+                <Footer />
                 <Toaster />
-              </CartProvider>
+              </SearchProvider>
             </WishlistProvider>
-          </SearchProvider>
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

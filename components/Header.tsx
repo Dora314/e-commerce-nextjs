@@ -19,9 +19,9 @@ import SearchBar from '@/components/SearchBar';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { state: cartState } = useCart();
-  const { state: wishlistState } = useWishlist();
-  const { state: authState, logout } = useAuth();
+  const { itemCount: cartItemCount } = useCart();
+  const { itemCount: wishlistItemCount } = useWishlist();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -55,31 +55,31 @@ export default function Header() {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-4">
             {/* Wishlist */}
-            <Link href="/wishlist">
-              <Button variant="ghost" size="icon" className="hidden sm:flex relative">
-                <Heart className="h-5 w-5" />
-                {wishlistState.itemCount > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                  >
-                    {wishlistState.itemCount}
-                  </Badge>
-                )}
-              </Button>
+            <Link href="/wishlist" className="relative text-slate-600 hover:text-slate-900">
+              <Heart className="h-6 w-6" />
+              {wishlistItemCount > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{wishlistItemCount}</Badge>
+              )}
+            </Link>
+            {/* Cart */}
+            <Link href="/cart" data-testid="cart-link" className="relative text-slate-600 hover:text-slate-900">
+              <ShoppingCart className="h-6 w-6" />
+              {cartItemCount > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{cartItemCount}</Badge>
+              )}
             </Link>
 
             {/* User Account */}
-            {authState.isAuthenticated ? (
+            {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="hidden sm:flex relative">
-                    {authState.user?.avatar ? (
+                    {user?.avatar ? (
                       <img
-                        src={authState.user.avatar}
-                        alt={authState.user.name}
+                        src={user.avatar}
+                        alt={user.name}
                         className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
@@ -89,8 +89,8 @@ export default function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{authState.user?.name}</p>
-                    <p className="text-xs text-slate-500">{authState.user?.email}</p>
+                    <p className="text-sm font-medium">{user?.name}</p>
+                    <p className="text-xs text-slate-500">{user?.email}</p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -105,7 +105,7 @@ export default function Header() {
                       Settings
                     </Link>
                   </DropdownMenuItem>
-                  {authState.user?.role === 'admin' && (
+                  {user?.role === 'ADMIN' && (
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="cursor-pointer">
                         <Settings className="h-4 w-4 mr-2" />
@@ -134,21 +134,6 @@ export default function Header() {
                 </Link>
               </div>
             )}
-
-            {/* Cart */}
-            <Link href="/cart">
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
-                {cartState.itemCount > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                  >
-                    {cartState.itemCount}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
 
             {/* Mobile Menu */}
             <Button
@@ -198,11 +183,11 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <Heart className="h-4 w-4" />
-                  Wishlist {wishlistState.itemCount > 0 && `(${wishlistState.itemCount})`}
+                  Wishlist {wishlistItemCount > 0 && `(${wishlistItemCount})`}
                 </Link>
                 
                 {/* Mobile Auth */}
-                {authState.isAuthenticated ? (
+                {isAuthenticated ? (
                   <>
                     <Link 
                       href="/profile" 
@@ -212,7 +197,7 @@ export default function Header() {
                       <User className="h-4 w-4" />
                       Profile
                     </Link>
-                    {authState.user?.role === 'admin' && (
+                    {user?.role === 'ADMIN' && (
                       <Link 
                         href="/admin" 
                         className="text-slate-600 hover:text-slate-900 font-medium py-2 transition-colors flex items-center gap-2"

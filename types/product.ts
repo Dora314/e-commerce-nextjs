@@ -14,9 +14,12 @@ export interface Product {
   tags: string[];
   createdAt: string;
   updatedAt: string;
+  isNew?: boolean;      // Optional: To mark new products
+  reviewCount?: number; // Optional: To store number of reviews
 }
 
 export interface CartItem {
+  id: string;
   product: Product;
   quantity: number;
 }

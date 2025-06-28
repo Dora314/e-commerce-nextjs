@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]  @relation("UserOrders")
+  cart      Cart?    @relation("UserCart")
+  wishlist  Wishlist? @relation("UserWishlist")
+}
+
+model Product {
+  id            String    @id @default(cuid())
+  name          String
+  description   String
+  price         Float
+  originalPrice Float?
+  image         String
+  images        String[]
+  stock         Int
+  category      String
+  rating        Float     @default(0)
+  reviews       Int       @default(0)
+  // Added inventory management fields
+  sku           String?   @unique
+  minStock      Int       @default(5)
+  maxStock      Int       @default(100)
+  reorderPoint  Int       @default(10)
+  supplier      String?
+  unitCost      Float?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  CartItem      CartItem[]      @relation("ProductCartItems")
+  WishlistItem  WishlistItem[]  @relation("ProductWishlistItems")
+  OrderItem     OrderItem[]     @relation("ProductOrderItems")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], name: "UserOrders")
+  total           Float
+  status          OrderStatus @default(PENDING)
+  
+  // Shipping Information
+  shippingAddressJson String
+  // We store the full address as a JSON string to be flexible
+  // e.g., { "fullName": "...", "street": "...", "city": "...", "zip": "...", "country": "...", "phone": "..." }
+
+  shippingMethod  String      @default("Standard")
+  shippingCost    Float       @default(0)
+
+  // Payment Information
+  paymentMethod   String
+  paymentStatus   PaymentStatus @default(PENDING) // e.g., PENDING, PAID, FAILED
+  transactionId   String?     @unique // From payment provider
+
+  notes           String?     // Customer notes
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  items           OrderItem[] @relation("OrderItems")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], name: "OrderItems")
+  productId String
+  product   Product @relation(fields: [productId], references: [id], name: "ProductOrderItems")
+  quantity  Int
+  price     Float // Price at the time of purchase
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], name: "UserCart")
+  items     CartItem[] @relation("CartItems")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id], name: "CartItems")
+  productId String
+  product   Product @relation(fields: [productId], references: [id], name: "ProductCartItems")
+  quantity  Int
+}
+
+model Wishlist {
+  id        String         @id @default(cuid())
+  userId    String         @unique
+  user      User           @relation(fields: [userId], references: [id], name: "UserWishlist")
+  items     WishlistItem[] @relation("WishlistItems")
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], name: "WishlistItems")
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], name: "ProductWishlistItems")
+}
+
+model Report {
+  id            String      @id @default(cuid())
+  name          String
+  description   String
+  type          ReportType
+  lastGenerated DateTime    @default(now())
+  size          String
+  status        ReportStatus @default(READY)
+  filePath      String?     // Path to generated report file
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum ReportType {
+  SALES
+  INVENTORY
+  CUSTOMERS
+  FINANCIAL
+}
+
+enum ReportStatus {
+  READY
+  GENERATING
+  ERROR
+}

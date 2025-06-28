@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,11 +42,14 @@ import {
   ShoppingBag,
   Edit
 } from 'lucide-react';
-import { mockCustomers } from '@/lib/mockData';
 import { Customer } from '@/types/product';
 import CustomerForm from '@/components/admin/CustomerForm';
 
 export default function AdminCustomersPage() {
+  const { token } = useAuth();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -53,7 +57,33 @@ export default function AdminCustomersPage() {
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
   const [isEditCustomerOpen, setIsEditCustomerOpen] = useState(false);
 
-  const filteredCustomers = mockCustomers.filter(customer => {
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      if (!token) return;
+      try {
+        setLoading(true);
+        const res = await fetch('/api/admin/customers', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+          throw new Error('Failed to fetch customer data');
+        }
+        const data = await res.json();
+        setCustomers(data);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, [token]);
+
+  const filteredCustomers = customers.filter(customer => {
     const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          customer.id.toLowerCase().includes(searchTerm.toLowerCase());
@@ -61,10 +91,10 @@ export default function AdminCustomersPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const totalCustomers = mockCustomers.length;
-  const activeCustomers = mockCustomers.filter(customer => customer.status === 'active' || customer.status === 'vip').length;
-  const newCustomers = mockCustomers.filter(customer => customer.status === 'new').length;
-  const vipCustomers = mockCustomers.filter(customer => customer.status === 'vip').length;
+  const totalCustomers = customers.length;
+  const activeCustomers = customers.filter(customer => customer.status === 'active' || customer.status === 'vip').length;
+  const newCustomers = customers.filter(customer => customer.status === 'new').length;
+  const vipCustomers = customers.filter(customer => customer.status === 'vip').length;
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -295,6 +325,51 @@ export default function AdminCustomersPage() {
         </CardContent>
       </Card>
 
+      {/* Customer Detail Modal */}
+      <Dialog open={isCustomerDetailOpen} onOpenChange={setIsCustomerDetailOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{selectedCustomer ? `${selectedCustomer.name}'s Details` : 'Customer Details'}</DialogTitle>
+          </DialogHeader>
+          {selectedCustomer && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6">
+              <div className="md:col-span-1 flex flex-col items-center text-center">
+                <img src={selectedCustomer.avatar} alt={selectedCustomer.name} className="w-24 h-24 rounded-full mb-4" />
+                <h2 className="text-xl font-bold">{selectedCustomer.name}</h2>
+                <p className="text-gray-500">{selectedCustomer.email}</p>
+                <div className="mt-2">{getStatusBadge(selectedCustomer.status)}</div>
+              </div>
+              <div className="md:col-span-2 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Phone className="h-5 w-5 text-gray-500" />
+                  <span>{selectedCustomer.phone}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-5 w-5 text-gray-500" />
+                  <span>{selectedCustomer.address}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-5 w-5 text-gray-500" />
+                  <span>Joined on {new Date(selectedCustomer.joinDate).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <ShoppingBag className="h-5 w-5 text-gray-500" />
+                  <span>{selectedCustomer.totalOrders} orders</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <DollarSign className="h-5 w-5 text-gray-500" />
+                  <span>${selectedCustomer.totalSpent.toFixed(2)} spent</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-5 w-5 text-gray-500" />
+                  <span>Last order: {selectedCustomer.lastOrder !== 'N/A' ? new Date(selectedCustomer.lastOrder).toLocaleDateString() : 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Add Customer Dialog */}
       <Dialog open={isAddCustomerOpen} onOpenChange={setIsAddCustomerOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -319,80 +394,6 @@ export default function AdminCustomersPage() {
                 setSelectedCustomer(null);
               }}
             />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Customer Details Dialog */}
-      <Dialog open={isCustomerDetailOpen} onOpenChange={setIsCustomerDetailOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Customer Details - {selectedCustomer?.name}</DialogTitle>
-          </DialogHeader>
-          {selectedCustomer && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <img
-                  src={selectedCustomer.avatar}
-                  alt={selectedCustomer.name}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <div>
-                  <h3 className="text-xl font-semibold">{selectedCustomer.name}</h3>
-                  <p className="text-gray-600">{selectedCustomer.id}</p>
-                  {getStatusBadge(selectedCustomer.status)}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-gray-500" />
-                    <span>{selectedCustomer.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <span>{selectedCustomer.phone}</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <MapPin className="h-4 w-4 text-gray-500 mt-1" />
-                    <span>{selectedCustomer.address}</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span>Joined: {new Date(selectedCustomer.joinDate).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ShoppingBag className="h-4 w-4 text-gray-500" />
-                    <span>{selectedCustomer.totalOrders} total orders</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-gray-500" />
-                    <span>${selectedCustomer.totalSpent.toLocaleString()} total spent</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="pt-4 border-t">
-                <p className="text-sm text-gray-600">
-                  Last order: {new Date(selectedCustomer.lastOrder).toLocaleDateString()}
-                </p>
-              </div>
-              
-              <div className="flex gap-3">
-                <Button onClick={() => contactCustomer(selectedCustomer, 'email')} className="gap-2">
-                  <Mail className="h-4 w-4" />
-                  Send Email
-                </Button>
-                <Button variant="outline" onClick={() => contactCustomer(selectedCustomer, 'phone')} className="gap-2">
-                  <Phone className="h-4 w-4" />
-                  Call Customer
-                </Button>
-              </div>
-            </div>
           )}
         </DialogContent>
       </Dialog>

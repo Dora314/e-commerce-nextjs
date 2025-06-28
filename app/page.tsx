@@ -1,13 +1,14 @@
 import Hero from '@/components/Hero';
 import ProductCard from '@/components/ProductCard';
-import { products, categories } from '@/lib/data';
+import { getProducts, categories } from '@/lib/data';
 import Link from 'next/link';
 import { ArrowRight, TrendingUp, Award, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-export default function Home() {
-  const featuredProducts = products.filter(product => product.featured);
+export default async function Home() {
+  const products = await getProducts();
+  const featuredProducts = products.slice(0, 8); // Show first 8 as featured
 
   return (
     <div>
@@ -93,7 +94,7 @@ export default function Home() {
                 Featured
               </Badge>
             </div>
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">Premium Picks</h2>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4" data-testid="featured-products-heading">Premium Picks</h2>
             <p className="text-xl text-slate-600 max-w-2xl mx-auto">
               Hand-selected products that represent the best of what we offer
             </p>

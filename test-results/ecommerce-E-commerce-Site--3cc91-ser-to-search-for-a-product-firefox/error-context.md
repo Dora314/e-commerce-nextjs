@@ -1,0 +1,267 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "EliteStore":
+    - /url: /
+  - searchbox "Search products...": Jeans
+  - button:
+    - img
+  - img
+  - navigation:
+    - link "Products":
+      - /url: /products
+    - link "Categories":
+      - /url: /categories
+    - link "Deals":
+      - /url: /deals
+  - link:
+    - /url: /wishlist
+    - img
+  - link:
+    - /url: /cart
+    - img
+  - link "Sign In":
+    - /url: /login
+    - button "Sign In"
+  - link "Sign Up":
+    - /url: /register
+    - button "Sign Up"
+- main:
+  - img
+  - text: Trusted by 50,000+ customers
+  - heading "Premium Quality, Exceptional Experience" [level=1]
+  - paragraph: Discover our carefully curated collection of premium products. From cutting-edge electronics to stylish fashion, we bring you quality that exceeds expectations.
+  - link "Shop Now":
+    - /url: /products
+    - button "Shop Now":
+      - text: Shop Now
+      - img
+  - link "Browse Categories":
+    - /url: /categories
+    - button "Browse Categories"
+  - img
+  - paragraph: Quality Guaranteed
+  - paragraph: Premium products only
+  - img
+  - paragraph: Free Shipping
+  - paragraph: On orders over $100
+  - img
+  - paragraph: 5-Star Service
+  - paragraph: Customer satisfaction
+  - img "Premium Headphones"
+  - img "Smart Watch"
+  - img "Fashion"
+  - img "Home Decor"
+  - img
+  - text: 50K+ Happy Customers
+  - img
+  - text: 1000+ Premium Products
+  - img
+  - text: 99.9% Satisfaction Rate
+  - img
+  - text: 24/7 Customer Support
+  - heading "Shop by Category" [level=2]
+  - paragraph: Explore our diverse range of carefully curated product categories
+  - link "Electronics Electronics Latest gadgets and electronic devices Explore":
+    - /url: /categories/electronics
+    - img "Electronics"
+    - heading "Electronics" [level=3]
+    - paragraph: Latest gadgets and electronic devices
+    - text: Explore
+  - link "Fashion Fashion Trendy clothing and accessories Explore":
+    - /url: /categories/fashion
+    - img "Fashion"
+    - heading "Fashion" [level=3]
+    - paragraph: Trendy clothing and accessories
+    - text: Explore
+  - link "Home & Garden Home & Garden Home decor and garden essentials Explore":
+    - /url: /categories/home-garden
+    - img "Home & Garden"
+    - heading "Home & Garden" [level=3]
+    - paragraph: Home decor and garden essentials
+    - text: Explore
+  - link "Sports Sports Sports equipment and fitness gear Explore":
+    - /url: /categories/sports
+    - img "Sports"
+    - heading "Sports" [level=3]
+    - paragraph: Sports equipment and fitness gear
+    - text: Explore
+  - link "Beauty & Health Beauty & Health Beauty products and health supplements Explore":
+    - /url: /categories/beauty-health
+    - img "Beauty & Health"
+    - heading "Beauty & Health" [level=3]
+    - paragraph: Beauty products and health supplements
+    - text: Explore
+  - link "Books & Media Books & Media Books, movies, music and digital media Explore":
+    - /url: /categories/books-media
+    - img "Books & Media"
+    - heading "Books & Media" [level=3]
+    - paragraph: Books, movies, music and digital media
+    - text: Explore
+  - link "Automotive Automotive Car parts and accessories Explore":
+    - /url: /categories/automotive
+    - img "Automotive"
+    - heading "Automotive" [level=3]
+    - paragraph: Car parts and accessories
+    - text: Explore
+  - link "Toys & Games Toys & Games Fun and educational toys and games Explore":
+    - /url: /categories/toys-games
+    - img "Toys & Games"
+    - heading "Toys & Games" [level=3]
+    - paragraph: Fun and educational toys and games
+    - text: Explore
+  - text: Featured
+  - heading "Premium Picks" [level=2]
+  - paragraph: Hand-selected products that represent the best of what we offer
+  - link "Premium Wireless Headphones -17% Electronics Premium Wireless Headphones $179.99 $215.99 Add to Cart":
+    - /url: /products/1
+    - img "Premium Wireless Headphones"
+    - text: "-17%"
+    - button:
+      - img
+    - paragraph: Electronics
+    - heading "Premium Wireless Headphones" [level=3]
+    - img
+    - img
+    - img
+    - img
+    - img
+    - text: $179.99 $215.99
+    - button "Add to Cart":
+      - img
+      - text: Add to Cart
+  - link "Smart Watch Series X -17% Electronics Smart Watch Series X $269.99 $323.99 Add to Cart":
+    - /url: /products/2
+    - img "Smart Watch Series X"
+    - text: "-17%"
+    - button:
+      - img
+    - paragraph: Electronics
+    - heading "Smart Watch Series X" [level=3]
+    - img
+    - img
+    - img
+    - img
+    - img
+    - text: $269.99 $323.99
+    - button "Add to Cart":
+      - img
+      - text: Add to Cart
+  - link "4K Gaming Monitor -17% Electronics 4K Gaming Monitor $419.99 $503.99 Add to Cart":
+    - /url: /products/3
+    - img "4K Gaming Monitor"
+    - text: "-17%"
+    - button:
+      - img
+    - paragraph: Electronics
+    - heading "4K Gaming Monitor" [level=3]
+    - img
+    - img
+    - img
+    - img
+    - img
+    - text: $419.99 $503.99
+    - button "Add to Cart":
+      - img
+      - text: Add to Cart
+  - link "Wireless Charging Pad -17% Electronics Wireless Charging Pad $23.99 $28.79 Add to Cart":
+    - /url: /products/4
+    - img "Wireless Charging Pad"
+    - text: "-17%"
+    - button:
+      - img
+    - paragraph: Electronics
+    - heading "Wireless Charging Pad" [level=3]
+    - img
+    - img
+    - img
+    - img
+    - img
+    - text: $23.99 $28.79
+    - button "Add to Cart":
+      - img
+      - text: Add to Cart
+  - link "Bluetooth Speaker Pro -17% Electronics Bluetooth Speaker Pro $77.99 $93.59 Add to Cart":
+    - /url: /products/5
+    - img "Bluetooth Speaker Pro"
+    - text: "-17%"
+    - button:
+      - img
+    - paragraph: Electronics
+    - heading "Bluetooth Speaker Pro" [level=3]
+    - img
+    - img
+    - img
+    - img
+    - img
+    - text: $77.99 $93.59
+    - button "Add to Cart":
+      - img
+      - text: Add to Cart
+  - link "View All Products":
+    - /url: /products
+    - button "View All Products":
+      - text: View All Products
+      - img
+  - heading "Stay in the Loop" [level=2]
+  - paragraph: Get exclusive deals, new product alerts, and insider tips delivered to your inbox.
+  - textbox "Enter your email"
+  - button "Subscribe"
+- contentinfo:
+  - heading "EliteStore" [level=3]
+  - paragraph: Your premium destination for quality products and exceptional shopping experience.
+  - link:
+    - /url: "#"
+    - img
+  - link:
+    - /url: "#"
+    - img
+  - link:
+    - /url: "#"
+    - img
+  - heading "Quick Links" [level=3]
+  - list:
+    - listitem:
+      - link "Products":
+        - /url: /products
+    - listitem:
+      - link "Categories":
+        - /url: /categories
+    - listitem:
+      - link "Deals":
+        - /url: /deals
+    - listitem:
+      - link "About Us":
+        - /url: /about
+  - heading "Customer Service" [level=3]
+  - list:
+    - listitem:
+      - link "Contact Us":
+        - /url: /contact
+    - listitem:
+      - link "Shipping Info":
+        - /url: /shipping
+    - listitem:
+      - link "Returns":
+        - /url: /returns
+    - listitem:
+      - link "FAQ":
+        - /url: /faq
+  - heading "Contact Info" [level=3]
+  - img
+  - text: 123 Commerce St, City, State 12345
+  - img
+  - text: +1 (555) 123-4567
+  - img
+  - text: contact@elitestore.com
+  - separator
+  - paragraph: © 2024 EliteStore. All rights reserved.
+  - link "Privacy Policy":
+    - /url: /privacy
+  - link "Terms of Service":
+    - /url: /terms
+- region "Notifications (F8)":
+  - list
+- alert
+```
