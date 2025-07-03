@@ -11,16 +11,16 @@ DELETE FROM "Product";
 
 -- 2. Insert User mẫu
 INSERT INTO "User" (id, name, email, password, role, "createdAt", "updatedAt") VALUES
-('clxrz2p5j000008l5g1j2a3k4', 'John Doe', 'john@example.com', 'password123', 'CUSTOMER', NOW(), NOW()),
-('clxrz2p5k000108l5h2k3b4l5', 'Jane Smith', 'jane@example.com', 'password123', 'CUSTOMER', NOW(), NOW()),
-('clxrz2p5l000208l5i3l4c5m6', 'Bob Johnson', 'bob@example.com', 'password123', 'CUSTOMER', NOW(), NOW()),
-('clxrz2p5m000308l5j4m5d6n7', 'Alice Brown', 'alice@example.com', 'password123', 'CUSTOMER', NOW(), NOW()),
-('clxrz2p5n000408l5k6n6e7o8', 'Charlie Wilson', 'charlie@example.com', 'password123', 'CUSTOMER', NOW(), NOW()),
-('clxrz2p5o000508l5l7o7f8p9', 'Diana Martinez', 'diana@example.com', 'password123', 'CUSTOMER', NOW(), NOW()),
-('clxrz2p5p000608l5m8p8g9q0', 'Edward Taylor', 'edward@example.com', 'password123', 'CUSTOMER', NOW(), NOW()),
-('clxrz2p5q000708l5n9q9h0r1', 'Fiona Davis', 'fiona@example.com', 'password123', 'CUSTOMER', NOW(), NOW()),
-('clxrz2p5r000808l5o0r0i1s2', 'George Anderson', 'george@example.com', 'password123', 'CUSTOMER', NOW(), NOW()),
-('clxrz2p5s000908l5p1s1j2t3', 'Helen Garcia', 'helen@example.com', 'password123', 'CUSTOMER', NOW(), NOW());
+('clxrz2p5j000008l5g1j2a3k4', 'John Doe', 'john@example.com', '$2b$10$4EErVFRKYqgJvYtiBLytcuxRm29Uwkdg0qk/D3DME3LxqJVOBvXWG', 'CUSTOMER', NOW(), NOW()),
+('clxrz2p5k000108l5h2k3b4l5', 'Jane Smith', 'jane@example.com', '$2b$10$4EErVFRKYqgJvYtiBLytcuxRm29Uwkdg0qk/D3DME3LxqJVOBvXWG', 'CUSTOMER', NOW(), NOW()),
+('clxrz2p5l000208l5i3l4c5m6', 'Bob Johnson', 'bob@example.com', '$2b$10$4EErVFRKYqgJvYtiBLytcuxRm29Uwkdg0qk/D3DME3LxqJVOBvXWG', 'CUSTOMER', NOW(), NOW()),
+('clxrz2p5m000308l5j4m5d6n7', 'Alice Brown', 'alice@example.com', '$2b$10$4EErVFRKYqgJvYtiBLytcuxRm29Uwkdg0qk/D3DME3LxqJVOBvXWG', 'CUSTOMER', NOW(), NOW()),
+('clxrz2p5n000408l5k6n6e7o8', 'Charlie Wilson', 'charlie@example.com', '$2b$10$4EErVFRKYqgJvYtiBLytcuxRm29Uwkdg0qk/D3DME3LxqJVOBvXWG', 'CUSTOMER', NOW(), NOW()),
+('clxrz2p5o000508l5l7o7f8p9', 'Diana Martinez', 'diana@example.com', '$2b$10$4EErVFRKYqgJvYtiBLytcuxRm29Uwkdg0qk/D3DME3LxqJVOBvXWG', 'CUSTOMER', NOW(), NOW()),
+('clxrz2p5p000608l5m8p8g9q0', 'Edward Taylor', 'edward@example.com', '$2b$10$4EErVFRKYqgJvYtiBLytcuxRm29Uwkdg0qk/D3DME3LxqJVOBvXWG', 'CUSTOMER', NOW(), NOW()),
+('clxrz2p5q000708l5n9q9h0r1', 'Fiona Davis', 'fiona@example.com', '$2b$10$4EErVFRKYqgJvYtiBLytcuxRm29Uwkdg0qk/D3DME3LxqJVOBvXWG', 'CUSTOMER', NOW(), NOW()),
+('clxrz2p5r000808l5o0r0i1s2', 'George Anderson', 'george@example.com', '$2b$10$4EErVFRKYqgJvYtiBLytcuxRm29Uwkdg0qk/D3DME3LxqJVOBvXWG', 'CUSTOMER', NOW(), NOW()),
+('clxrz2p5s000908l5p1s1j2t3', 'Helen Garcia', 'helen@example.com', '$2b$10$4EErVFRKYqgJvYtiBLytcuxRm29Uwkdg0qk/D3DME3LxqJVOBvXWG', 'CUSTOMER', NOW(), NOW());
 
 -- 3. Insert Product mẫu (chỉ lấy các trường chung, có thể bổ sung trường inventory sau)
 INSERT INTO "Product" (id, name, description, price, stock, image, images, category, "createdAt", "updatedAt") VALUES
