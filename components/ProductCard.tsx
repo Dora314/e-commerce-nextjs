@@ -45,7 +45,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/products/${product.id}`}>
       <div data-testid="product-card" className="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-        <div className="relative aspect-square overflow-hidden bg-gray-50">
+        <div className="relative w-full h-0 pb-[100%] overflow-hidden bg-gray-50">
           <Image
             src={product.image}
             alt={product.name}

@@ -1,10 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { CartProvider } from '@/contexts/CartContext';
-import { WishlistProvider } from '@/contexts/WishlistContext';
-import { SearchProvider } from '@/contexts/SearchContext';
+import Providers from '@/components/Providers';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
@@ -25,18 +22,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <SearchProvider>
-                <Header />
-                <main>{children}</main>
-                <Footer />
-                <Toaster />
-              </SearchProvider>
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
+        <Providers>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

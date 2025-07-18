@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Plus } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProductFormProps {
   product?: Product;
@@ -18,7 +18,7 @@ interface ProductFormProps {
 }
 
 export default function ProductForm({ product, categories, onClose, onSave }: ProductFormProps) {
-  const { data: session } = useSession();
+  const { token } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -80,18 +80,16 @@ export default function ProductForm({ product, categories, onClose, onSave }: Pr
     setIsSaving(true);
     setError(null);
 
-    const apiEndpoint = product
-      ? `/api/admin/products/${product.id}`
-      : '/api/admin/products';
+    const apiEndpoint = product ? `/api/admin/products/${product.id}` : '/api/admin/products';
     const method = product ? 'PUT' : 'POST';
 
     try {
       const res = await fetch(apiEndpoint, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.accessToken}`,
-        },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
         body: JSON.stringify(formData),
       });
 
