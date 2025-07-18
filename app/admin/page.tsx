@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
-import { getProducts } from '@/lib/data';
+import { useAuth } from '@/contexts/AuthContext';
+// import getProducts for server side is replaced by client fetch to API
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +35,21 @@ import {
 } from 'lucide-react';
 import ProductForm from '@/components/admin/ProductForm';
 
+// Define Customer type based on API response
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  joinDate: string;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrder: string;
+  status: 'new' | 'active' | 'vip' | 'inactive';
+  avatar: string;
+}
+
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -41,12 +57,18 @@ export default function AdminDashboard() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [custLoading, setCustLoading] = useState(true);
 
+  const { token } = useAuth();
   useEffect(() => {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        const productData = await getProducts();
+        const res = await fetch('/api/admin/products', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const { products: productData } = await res.json();
         setProducts(productData);
       } catch (error) {
         console.error('Error loading products:', error);
@@ -54,21 +76,36 @@ export default function AdminDashboard() {
         setLoading(false);
       }
     };
-
     loadProducts();
   }, []);
-
-  const handleSaveProduct = () => {
-    // Refresh products after save
-    const loadProducts = async () => {
+  // Load customers
+  useEffect(() => {
+    const loadCustomers = async () => {
       try {
-        const productData = await getProducts();
-        setProducts(productData);
+        setCustLoading(true);
+        const res = await fetch('/api/admin/customers', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data: Customer[] = await res.json();
+        setCustomers(data);
       } catch (error) {
-        console.error('Error loading products:', error);
+        console.error('Error loading customers:', error);
+      } finally {
+        setCustLoading(false);
       }
     };
-    loadProducts();
+    loadCustomers();
+  }, [token]);
+
+  const handleSaveProduct = async () => {
+    // Refresh products after save
+    try {
+      const res = await fetch('/api/admin/products');
+      const productData = await res.json();
+      setProducts(productData);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    }
     setIsAddDialogOpen(false);
     setIsEditDialogOpen(false);
   };
